@@ -59,10 +59,12 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# Ruta principal
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# Registro de desarrolladores
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
@@ -70,14 +72,26 @@ def submit():
         required_fields = ['name', 'email', 'skills', 'experience_years']
         
         if not all(data.get(field) for field in required_fields):
-            return jsonify({'error': 'Campos requeridos faltantes'}), 400
+            return jsonify({
+                'status': 'error',
+                'message': '🚨 Faltan datos!',
+                'details': 'Completa todos los campos requeridos'
+            }), 400
             
         experience = int(data.get('experience_years'))
         if experience < 0:
-            return jsonify({'error': 'Años de experiencia inválidos'}), 400
+            return jsonify({
+                'status': 'error', 
+                'message': '🕶️ Ups!',
+                'details': 'Los años de experiencia no pueden ser negativos'
+            }), 400
 
         if not is_valid_email(data.get('email')):
-            return jsonify({'error': 'Email inválido'}), 400
+            return jsonify({
+                'status': 'error',
+                'message': '📧 Email inválido!',
+                'details': 'Usa un formato correcto (ej: usuario@dominio.com)'
+            }), 400
 
         developer_data = (
             data.get('name'),
@@ -94,12 +108,26 @@ def submit():
                 conn.execute('''INSERT INTO developers 
                             (name, email, skills, experience_years, portfolio_url, location, created_at)
                             VALUES (?, ?, ?, ?, ?, ?, ?)''', developer_data)
-                return jsonify({'message': 'Registro exitoso'}), 201
+                return jsonify({
+                    'status': 'success',
+                    'message': '🎉 ¡Registro exitoso!',
+                    'details': 'Tu perfil blockchain está listo para brillar ✨',
+                    'animation': 'confetti'
+                }), 201
             except sqlite3.IntegrityError:
-                return jsonify({'error': 'Email ya registrado'}), 409
+                return jsonify({
+                    'status': 'error',
+                    'message': '💥 Email duplicado!',
+                    'details': 'Este correo ya está registrado en nuestro sistema'
+                }), 409
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        return jsonify({
+            'status': 'error',
+            'message': '🚨 Error cósmico!',
+            'details': str(e)
+        }), 500
 
+# Sistema de administración
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if request.method == 'POST':
@@ -125,15 +153,8 @@ def admin_dashboard():
     with sqlite3.connect('devpool.db') as conn:
         conn.row_factory = sqlite3.Row
         developers = conn.execute('''
-            SELECT 
-                id,
-                name,
-                email,
-                skills,
-                experience_years,
-                portfolio_url as portfolio,
-                location,
-                created_at
+            SELECT id, name, email, skills, experience_years,
+                   portfolio_url as portfolio, location, created_at
             FROM developers
         ''').fetchall()
     return render_template('admin_dashboard.html', developers=developers)
