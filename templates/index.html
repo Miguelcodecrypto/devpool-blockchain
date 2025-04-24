@@ -77,6 +77,36 @@
             background: rgba(239, 68, 68, 0.9) !important;
             border: 2px solid #dc2626;
         }
+
+        /* Animaciones para logo y texto */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-30px); }
+            60% { transform: translateY(-15px); }
+        }
+        @keyframes fall {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .logo {
+            animation: bounce 1s ease-in-out;
+        }
+        .letter {
+            display: inline-block;
+            animation: fall 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .logo {
+                animation: none;
+            }
+            .letter {
+                animation: none;
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 <body class="bg-light">
@@ -84,8 +114,10 @@
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
             <a class="navbar-brand" href="/">
-                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" height="40" class="me-2">
-                DEVPOOL ABCLM
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" height="40" class="me-2 logo">
+                <span class="brand-text">
+                    <span class="letter">D</span><span class="letter">E</span><span class="letter">V</span><span class="letter">P</span><span class="letter">O</span><span class="letter">O</span><span class="letter">L</span> <span class="letter">A</span><span class="letter">B</span><span class="letter">C</span><span class="letter">L</span><span class="letter">M</span>
+                </span>
             </a>
             <div class="admin-link">
                 <a href="/admin/login" class="btn btn-outline-light btn-sm">
@@ -220,6 +252,13 @@
                 message.remove();
             }, 5000);
         }
+
+        // Script para animaciones de letras
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.brand-text .letter').forEach((letter, index) => {
+                letter.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
     </script>
 </body>
 </html>
