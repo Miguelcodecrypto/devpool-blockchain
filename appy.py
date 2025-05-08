@@ -6,8 +6,6 @@ import re
 import json
 import os
 from functools import wraps
-import psycopg2
-from psycopg2 import sql
 
 app = Flask(__name__)
 app.secret_key = 'clave_secreta_123'
@@ -23,30 +21,21 @@ def add_header(response):
 def init_db():
     conn = psycopg2.connect(os.environ.get('DATABASE_URL'))
     c = conn.cursor()
-    c.execute(sql.SQL('''CREATE TABLE IF NOT EXISTS developers (
-            id SERIAL PRIMARY KEY,
+    c.execute('''CREATE TABLE IF NOT EXISTS developers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             email TEXT NOT NULL UNIQUE,
             skills TEXT NOT NULL,
             experience_years INTEGER,
             portfolio_url TEXT,
             location TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )'''))
+            created_at TIMESTAMP
+        )''')
         c.execute('''CREATE TABLE IF NOT EXISTS admin (
-            id SERIAL PRIMARY KEY,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
             hashed_password TEXT NOT NULL
         )''')
-
-        c.execute("SELECT COUNT(*) FROM admin")
-        if c.fetchone()[0] == 0:
-            # Use a strong username and password
-            secure_username = "secure_admin"
-            secure_password = "P@ssw0rd!2023#Strong"
-            hashed_pwd = hash_password(secure_password)
-            c.execute("INSERT INTO admin (username, hashed_password) VALUES (%s, %s)",
-                 (secure_username, hashed_pwd))
         
         c.execute("SELECT COUNT(*) FROM admin")
         if c.fetchone()[0] == 0:
