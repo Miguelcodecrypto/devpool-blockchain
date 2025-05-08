@@ -19,30 +19,9 @@ def add_header(response):
     return response
 
 def init_db():
-    with sqlite3.connect('devpool.db') as conn:
-        c = conn.cursor()
-        c.execute('''CREATE TABLE IF NOT EXISTS developers (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT NOT NULL UNIQUE,
-            skills TEXT NOT NULL,
-            experience_years INTEGER,
-            portfolio_url TEXT,
-            location TEXT,
-            created_at TIMESTAMP
-        )''')
-        c.execute('''CREATE TABLE IF NOT EXISTS admin (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username TEXT NOT NULL UNIQUE,
-            hashed_password TEXT NOT NULL
-        )''')
-        
-        c.execute("SELECT COUNT(*) FROM admin")
-        if c.fetchone()[0] == 0:
-            hashed_pwd = hash_password("admin123")
-            c.execute("INSERT INTO admin (username, hashed_password) VALUES (?, ?)",
-                     ("admin", hashed_pwd))
-        conn.commit()
+    conn = psycopg2.connect(os.environ.get('DATABASE_URL'))
+    c = conn.cursor()
+    # ... (mantén el resto del código de creación de tablas)
 
 def is_valid_email(email: str) -> bool:
     pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
@@ -191,4 +170,4 @@ def admin_logout():
 
 if __name__ == '__main__':
     init_db()
-    app.run(debug=True, port=5000)
+    app.run(debug=False)
