@@ -21,6 +21,28 @@ def add_header(response):
 def init_db():
     conn = psycopg2.connect(os.environ.get('DATABASE_URL'))
     c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS developers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            email TEXT NOT NULL UNIQUE,
+            skills TEXT NOT NULL,
+            experience_years INTEGER,
+            portfolio_url TEXT,
+            location TEXT,
+            created_at TIMESTAMP
+        )''')
+        c.execute('''CREATE TABLE IF NOT EXISTS admin (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            hashed_password TEXT NOT NULL
+        )''')
+        
+        c.execute("SELECT COUNT(*) FROM admin")
+        if c.fetchone()[0] == 0:
+            hashed_pwd = hash_password("admin123")
+            c.execute("INSERT INTO admin (username, hashed_password) VALUES (?, ?)",
+                     ("admin", hashed_pwd))
+        conn.commit()
     
     # ... (mantén el resto del código de creación de tablas)
 
