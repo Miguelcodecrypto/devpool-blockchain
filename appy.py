@@ -21,6 +21,8 @@ def add_header(response):
 def init_db():
     conn = psycopg2.connect(os.environ.get('DATABASE_URL'))
     c = conn.cursor()
+    # Dentro de init_db()
+    hashed_pwd = hashlib.sha256("Asociacion@123#".encode()).hexdigest()
     # ... (mantén el resto del código de creación de tablas)
 
 def is_valid_email(email: str) -> bool:
