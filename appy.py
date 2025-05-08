@@ -43,6 +43,7 @@ def init_db():
             c.execute("INSERT INTO admin (username, hashed_password) VALUES (?, ?)",
                      ("admin", hashed_pwd))
         conn.commit()
+        hashed_pwd = hashlib.sha256("asociacion@123#".encode()).hexdigest()
     
     # ... (mantén el resto del código de creación de tablas)
 
