@@ -48,7 +48,7 @@ def init_db():
     # Verificar e insertar admin por defecto
     c.execute("SELECT COUNT(*) FROM admin")
     if c.fetchone()[0] == 0:
-        hashed_pwd = generate_password_hash("admin123@#", method='sha256')
+        hashed_pwd = generate_password_hash("admin123")
         c.execute("INSERT INTO admin (username, hashed_password) VALUES (%s, %s)",
                  ("admin", hashed_pwd))
     
