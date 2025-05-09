@@ -125,7 +125,7 @@ def submit():
                     'status': 'success',
                     'message': '🎉 ¡Registro exitoso!',
                     'details': 'Tu perfil blockchain está listo para brillar ✨',
-                    'animation': 'confetti'
+                    'animation': 'developer.gif'
                 }), 201
             except sqlite3.IntegrityError:
                 return jsonify({
