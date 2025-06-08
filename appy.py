@@ -1,21 +1,43 @@
 from flask import Flask, request, jsonify, render_template, send_file, redirect, url_for
 from datetime import datetime
-import hashlib
 import re
 import json
 import os
-import psycopg2
-from psycopg2.errors import UniqueViolation
-from psycopg2.extras import RealDictCursor
+import uuid
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
+from supabase import create_client, Client
 
-# Cargar variables de entorno (útil en local)
+# Cargar variables de entorno
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_123')
+
+# ────────────────────────────────────────────────
+# Configuración de Supabase
+class SupabaseConnector:
+    def __init__(self):
+        self.url = os.getenv("SUPABASE_URL")
+        self.key = os.getenv("SUPABASE_KEY")
+        self.client = self._create_client()
+    
+    def _create_client(self) -> Client:
+        """Crea y autentica el cliente de Supabase"""
+        if not self.url or not self.key:
+            raise ValueError("Faltan variables de entorno SUPABASE_URL o SUPABASE_KEY")
+        
+        return create_client(self.url, self.key)
+    
+    def get_table(self, table_name: str):
+        """Devuelve referencia a una tabla"""
+        return self.client.table(table_name)
+
+# Inicializar conexión a Supabase
+supabase_conn = SupabaseConnector()
+developers_table = supabase_conn.get_table('developers')
+admin_table = supabase_conn.get_table('admin')
 
 # ────────────────────────────────────────────────
 # Configuración de caché
@@ -25,53 +47,6 @@ def add_header(response):
     response.headers['Pragma'] = 'no-cache'
     response.headers['Expires'] = '0'
     return response
-
-# ────────────────────────────────────────────────
-# CONEXIÓN A SUPABASE (PostgreSQL)
-def get_db_connection():
-    try:
-        return psycopg2.connect(os.environ['DATABASE_URL'], cursor_factory=RealDictCursor)
-    except KeyError:
-        raise RuntimeError("Falta la variable DATABASE_URL en el entorno")
-
-# ────────────────────────────────────────────────
-# INICIALIZACIÓN DE LA BASE DE DATOS
-def init_db():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    try:
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS developers (
-                id SERIAL PRIMARY KEY,
-                name TEXT NOT NULL,
-                email TEXT NOT NULL UNIQUE,
-                skills TEXT NOT NULL,
-                experience_years INTEGER CHECK (experience_years >= 0),
-                portfolio_url TEXT,
-                location TEXT,
-                created_at TIMESTAMP
-            );
-        ''')
-        cursor.execute('''
-            CREATE TABLE IF NOT EXISTS admin (
-                id SERIAL PRIMARY KEY,
-                username TEXT NOT NULL UNIQUE,
-                hashed_password TEXT NOT NULL
-            );
-        ''')
-        cursor.execute("SELECT COUNT(*) FROM admin")
-        if cursor.fetchone()["count"] == 0:
-            hashed_pwd = generate_password_hash("admin123")
-            cursor.execute(
-                "INSERT INTO admin (username, hashed_password) VALUES (%s, %s)",
-                ("admin", hashed_pwd)
-            )
-        conn.commit()
-    except Exception as e:
-        conn.rollback()
-        raise e
-    finally:
-        conn.close()
 
 # ────────────────────────────────────────────────
 # VALIDACIÓN DE EMAIL
@@ -110,31 +85,30 @@ def submit():
         if not is_valid_email(data.get('email')):
             return jsonify({'status': 'error', 'message': '📧 Email inválido!', 'details': 'Usa un formato correcto'}), 400
 
-        developer_data = (
-            data.get('name'),
-            data.get('email'),
-            data.get('skills'),
-            experience,
-            data.get('portfolio_url'),
-            data.get('location'),
-            datetime.utcnow()
-        )
+        developer_data = {
+            "name": data.get('name'),
+            "email": data.get('email'),
+            "skills": data.get('skills'),
+            "experience_years": experience,
+            "portfolio_url": data.get('portfolio_url') or None,
+            "location": data.get('location') or None,
+            "created_at": datetime.utcnow().isoformat()
+        }
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        try:
-            cursor.execute('''
-                INSERT INTO developers (name, email, skills, experience_years, portfolio_url, location, created_at)
-                VALUES (%s, %s, %s, %s, %s, %s, %s)
-            ''', developer_data)
-            conn.commit()
-            return jsonify({'status': 'success', 'message': '🎉 ¡Registro exitoso!', 'animation': 'confetti'}), 201
-
-        except UniqueViolation:
-            conn.rollback()
-            return jsonify({'status': 'error', 'message': '💥 Email duplicado!', 'details': 'Este correo ya está registrado'}), 409
-        finally:
-            conn.close()
+        # Insertar en Supabase
+        response = developers_table.insert(developer_data).execute()
+        
+        if response.data:
+            return jsonify({
+                'status': 'success', 
+                'message': '🎉 ¡Registro exitoso!',
+                'animation': 'confetti'
+            }), 201
+        else:
+            error = response.error.message if response.error else "Error desconocido"
+            if "duplicate key" in error.lower():
+                return jsonify({'status': 'error', 'message': '💥 Email duplicado!', 'details': 'Este correo ya está registrado'}), 409
+            return jsonify({'status': 'error', 'message': '🚨 Error en Supabase', 'details': error}), 500
 
     except Exception as e:
         return jsonify({'status': 'error', 'message': '🚨 Error cósmico!', 'details': str(e)}), 500
@@ -145,16 +119,15 @@ def admin_login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        cursor.execute('SELECT hashed_password FROM admin WHERE username = %s', (username,))
-        result = cursor.fetchone()
-        conn.close()
-
-        if result and check_password_hash(result['hashed_password'], password):
-            response = redirect(url_for('admin_dashboard'))
-            response.set_cookie('admin_logged', 'true', max_age=3600)
-            return response
+        # Buscar admin en Supabase
+        response = admin_table.select("hashed_password").eq("username", username).execute()
+        
+        if response.data and len(response.data) > 0:
+            admin_record = response.data[0]
+            if check_password_hash(admin_record['hashed_password'], password):
+                response = redirect(url_for('admin_dashboard'))
+                response.set_cookie('admin_logged', 'true', max_age=3600, httponly=True, samesite='Strict')
+                return response
 
         return render_template('admin_login.html', error='Credenciales inválidas')
     return render_template('admin_login.html')
@@ -162,31 +135,28 @@ def admin_login():
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM developers ORDER BY created_at DESC')
-    developers = cursor.fetchall()
-    conn.close()
+    # Obtener todos los desarrolladores
+    response = developers_table.select("*").order("created_at", desc=True).execute()
+    developers = response.data
     return render_template('admin_dashboard.html', developers=developers)
 
-@app.route('/admin/delete/<int:dev_id>', methods=['POST'])
+@app.route('/admin/delete/<string:dev_id>', methods=['POST'])
 @admin_required
 def delete_developer(dev_id):
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('DELETE FROM developers WHERE id = %s', (dev_id,))
-    conn.commit()
-    conn.close()
-    return redirect(url_for('admin_dashboard'))
+    # Eliminar por ID en Supabase
+    response = developers_table.delete().eq('id', dev_id).execute()
+    
+    if response.data and len(response.data) > 0:
+        return redirect(url_for('admin_dashboard'))
+    else:
+        return jsonify({'status': 'error', 'message': 'Desarrollador no encontrado'}), 404
 
 @app.route('/admin/export')
 @admin_required
 def export_to_json():
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('SELECT * FROM developers')
-    developers = cursor.fetchall()
-    conn.close()
+    # Obtener todos los desarrolladores
+    response = developers_table.select("*").execute()
+    developers = response.data
 
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f'developers_export_{timestamp}.json'
@@ -206,5 +176,11 @@ def admin_logout():
 
 # ────────────────────────────────────────────────
 if __name__ == '__main__':
-    init_db()
-    app.run(debug=False)
+    # Configuración importante para producción
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False') == 'True'
+    port = int(os.environ.get('PORT', 5000))  # Corrección aquí
+    app.run(
+        debug=debug_mode,
+        host='0.0.0.0',
+        port=port
+    )
