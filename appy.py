@@ -36,8 +36,10 @@ class SupabaseConnector:
 
 # Inicializar conexión a Supabase
 supabase_conn = SupabaseConnector()
-developers_table = supabase_conn.get_table('developers')
-admin_table = supabase_conn.get_table('admin')
+users_table = supabase_conn.get_table('users')
+skills_users_table = supabase_conn.get_table('skills_users')
+roles_table = supabase_conn.get_table('roles')
+skills_table = supabase_conn.get_table('skills')
 
 # ────────────────────────────────────────────────
 # Configuración de caché
