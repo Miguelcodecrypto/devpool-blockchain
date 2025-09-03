@@ -40,6 +40,8 @@ users_table = supabase_conn.get_table('users')
 skills_users_table = supabase_conn.get_table('skills_users')
 roles_table = supabase_conn.get_table('roles')
 skills_table = supabase_conn.get_table('skills')
+developers_table = supabase_conn.get_table('developers')
+admin_table = supabase_conn.get_table('admin')
 
 # ────────────────────────────────────────────────
 # Configuración de caché
@@ -121,17 +123,27 @@ def admin_login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        # Buscar admin en Supabase
-        response = admin_table.select("hashed_password").eq("username", username).execute()
-        
+        try:
+            # Buscar admin en Supabase
+            response = admin_table.select("hashed_password").eq("username", username).execute()
+            print("Respuesta Supabase:", response)
+            print("Datos:", getattr(response, 'data', None))
+        except Exception as e:
+            return render_template('admin_login.html', error=f"Error de conexión o tabla: {str(e)}")
+
+        if not response or not hasattr(response, 'data'):
+            return render_template('admin_login.html', error='No se pudo consultar la tabla admin.')
+
         if response.data and len(response.data) > 0:
             admin_record = response.data[0]
             if check_password_hash(admin_record['hashed_password'], password):
                 response = redirect(url_for('admin_dashboard'))
                 response.set_cookie('admin_logged', 'true', max_age=3600, httponly=True, samesite='Strict')
                 return response
-
-        return render_template('admin_login.html', error='Credenciales inválidas')
+            else:
+                return render_template('admin_login.html', error='Contraseña incorrecta.')
+        else:
+            return render_template('admin_login.html', error='Usuario no encontrado o tabla vacía.')
     return render_template('admin_login.html')
 
 @app.route('/admin/dashboard')
@@ -179,8 +191,8 @@ def admin_logout():
 # ────────────────────────────────────────────────
 if __name__ == '__main__':
     # Configuración importante para producción
-    debug_mode = os.environ.get('FLASK_DEBUG', 'False') == 'True'
-    port = int(os.environ.get('PORT', 5000))  # Corrección aquí
+    debug_mode = True  # Activar modo debug siempre
+    port = int(os.environ.get('PORT', 5000))
     app.run(
         debug=debug_mode,
         host='0.0.0.0',
