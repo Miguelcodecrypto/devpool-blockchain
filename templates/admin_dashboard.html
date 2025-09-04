@@ -52,7 +52,14 @@
                             <i class="far fa-clock"></i>
                             Registrado: {{ dev.created_at_local|default('N/A') }}<br>
                             <i class="fas fa-network-wired"></i>
-                            IP: {{ dev.ip|default('N/A') }}
+                            IP: {{ dev.ip|default('N/A') }}<br>
+                            <i class="fas fa-link"></i>
+                            Portfolio: 
+                            {% if dev.portfolio_url %}
+                                <a href="{{ dev.portfolio_url }}" target="_blank">{{ dev.portfolio_url }}</a>
+                            {% else %}
+                                N/A
+                            {% endif %}
                         </p>
                         <div class="mb-3">
                             <span class="badge bg-primary">{{ dev.experience_years }} años experiencia</span>
