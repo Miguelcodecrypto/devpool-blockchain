@@ -10,9 +10,12 @@
     <style>
         /* Mejoras para móviles */
         @media (max-width: 576px) {
-            .hero-section {
-                padding: 2rem 0;
-                font-size: 1.1rem;
+                .hero-section {
+                    padding: 6rem 0;
+                    font-size: 1.05rem;
+                    background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("{{ url_for('static', filename='blockchain-bg.jpg') }}");
+                    background-size: cover;
+                    background-position: center;
             }
             .navbar-brand .brand-text {
                 font-size: 1.1rem;
@@ -50,7 +53,7 @@
             }
         }
         .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), 
+            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), 
                         url("{{ url_for('static', filename='blockchain-bg.jpg') }}");
             background-size: cover;
             background-position: center;
@@ -179,7 +182,7 @@
             <div class="row justify-content-center">
                 <div class="col-lg-8">
                     <h1 class="display-4 fw-bold mb-4">Conectando Talentos Blockchain</h1>
-                    <p class="lead mb-4">Registro oficial de perfiles Web3 de La Asociación Blockchain de Castilla-La Mancha</p>
+                    <p class="lead mb-4" style="color:#ffd700; font-weight:bold; text-shadow: 1px 1px 8px #222;">Registro oficial de perfiles Web3 de La Asociación Blockchain de Castilla-La Mancha</p>
                     <img src="{{ url_for('static', filename='blockchain-icons.svg') }}" alt="Tecnología Blockchain" class="img-fluid" style="max-width: 300px;">
                 </div>
             </div>
