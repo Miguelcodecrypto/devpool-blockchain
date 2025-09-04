@@ -50,7 +50,9 @@
                         <p class="text-muted small mb-2">{{ dev.email }}</p>
                         <p class="small mb-2 text-secondary">
                             <i class="far fa-clock"></i>
-                            Registrado: {{ dev.created_at_local|default('N/A') }}
+                            Registrado: {{ dev.created_at_local|default('N/A') }}<br>
+                            <i class="fas fa-network-wired"></i>
+                            IP: {{ dev.ip|default('N/A') }}
                         </p>
                         <div class="mb-3">
                             <span class="badge bg-primary">{{ dev.experience_years }} años experiencia</span>

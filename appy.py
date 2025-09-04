@@ -100,6 +100,14 @@ def submit():
         if portfolio_url:
             if not portfolio_url.startswith(('http://', 'https://')):
                 portfolio_url = 'https://' + portfolio_url
+        # Obtener IP del usuario
+        if request.headers.get('X-Forwarded-For'):
+            ip = request.headers.get('X-Forwarded-For').split(',')[0].strip()
+        else:
+            ip = request.remote_addr
+        if not ip:
+            ip = "Sin IP"
+        print(f"IP registrada: {ip}")
         developer_data = {
             "name": data.get('name'),
             "email": data.get('email'),
@@ -107,7 +115,8 @@ def submit():
             "experience_years": experience,
             "portfolio_url": portfolio_url,
             "location": data.get('location') or None,
-            "created_at": datetime.utcnow().isoformat()
+            "created_at": datetime.utcnow().isoformat(),
+            "ip": ip
         }
 
         # Insertar en Supabase
