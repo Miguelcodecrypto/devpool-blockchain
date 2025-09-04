@@ -95,24 +95,35 @@ def submit():
         if not is_valid_email(data.get('email')):
             return jsonify({'status': 'error', 'message': '📧 Email inválido!', 'details': 'Usa un formato correcto'}), 400
 
+        # Normalizar la URL de portfolio
+        portfolio_url = data.get('portfolio_url') or None
+        if portfolio_url:
+            if not portfolio_url.startswith(('http://', 'https://')):
+                portfolio_url = 'https://' + portfolio_url
         developer_data = {
             "name": data.get('name'),
             "email": data.get('email'),
             "skills": data.get('skills'),
             "experience_years": experience,
-            "portfolio_url": data.get('portfolio_url') or None,
+            "portfolio_url": portfolio_url,
             "location": data.get('location') or None,
             "created_at": datetime.utcnow().isoformat()
         }
 
         # Insertar en Supabase
         response = developers_table.insert(developer_data).execute()
-        
         if response.data:
+            # Obtener el número actualizado de usuarios
+            try:
+                count_response = developers_table.select('id').execute()
+                num_usuarios = len(count_response.data) if count_response and hasattr(count_response, 'data') else 0
+            except Exception:
+                num_usuarios = 0
             return jsonify({
-                'status': 'success', 
+                'status': 'success',
                 'message': '🎉 ¡Registro exitoso!',
-                'animation': 'confetti'
+                'animation': 'confetti',
+                'num_usuarios': num_usuarios
             }), 201
         else:
             error = response.error.message if response.error else "Error desconocido"
@@ -155,9 +166,27 @@ def admin_login():
 @app.route('/admin/dashboard')
 @admin_required
 def admin_dashboard():
+
+    import pytz
+    from dateutil import parser
     # Obtener todos los desarrolladores
     response = developers_table.select("*").order("created_at", desc=True).execute()
     developers = response.data
+    # Convertir la hora UTC a hora local de España (CET/CEST) respetando horario de verano/invierno
+    if developers:
+        spain_tz = pytz.timezone('Europe/Madrid')
+        for dev in developers:
+            created_at = dev.get('created_at')
+            if created_at:
+                try:
+                    dt_utc = parser.isoparse(created_at)
+                    if dt_utc.tzinfo is None:
+                        dt_utc = pytz.utc.localize(dt_utc)
+                    dt_local = dt_utc.astimezone(spain_tz)
+                    dev['created_at_local'] = dt_local.strftime('%Y-%m-%d %H:%M:%S')
+                except Exception:
+                    dev['created_at_local'] = created_at
+        developers = sorted(developers, key=lambda d: d.get('created_at', ''), reverse=True)
     return render_template('admin_dashboard.html', developers=developers)
 
 @app.route('/admin/delete/<string:dev_id>', methods=['POST'])

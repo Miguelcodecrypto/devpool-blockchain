@@ -8,16 +8,56 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <style>
+        .modern-title {
+            font-family: 'Montserrat', 'Segoe UI', 'Arial', sans-serif;
+            font-weight: 800;
+            font-size: 2.8rem;
+            letter-spacing: 2px;
+            color: #fff;
+            text-shadow: 0 2px 12px #222, 0 0 8px #6366f1;
+            background: none !important;
+            margin-bottom: 0.5rem;
+        }
+    @media (max-width: 576px) {
+            #counter-container {
+                font-size: 2rem !important;
+                margin-top: 2rem !important;
+                margin-bottom: 2rem !important;
+                padding: 1.2rem 0.5rem !important;
+                text-align: center !important;
+                background: rgba(0,0,0,0.55);
+                border-radius: 18px;
+                color: #00e676 !important;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+                width: 95vw;
+                max-width: 95vw;
+                left: 50%;
+                transform: translateX(-50%);
+                position: relative;
+                z-index: 10;
+            }
+            #counter-container span {
+                font-size: 2rem !important;
+                color: #00e676 !important;
+            }
+        }
+        .hero-title-bg {
+            background: rgba(0,0,0,0.55);
+            border-radius: 18px;
+            padding: 1rem 2rem 1rem 2rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1.5rem;
+            display: inline-block;
+            max-width: 90vw;
+        }
         /* Mejoras para móviles */
         @media (max-width: 576px) {
-                .hero-section {
-                    padding: 6rem 0;
-                    font-size: 1.05rem;
-                    background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url("{{ url_for('static', filename='blockchain-bg.jpg') }}");
-                    background-size: cover;
-                    background-position: center;
+            .hero-section {
+                padding: 3rem 0 2rem 0;
+                font-size: 1rem;
             }
-            .navbar-brand .brand-text {
+        }
+        .navbar-brand .brand-text {
                 font-size: 1.1rem;
             }
             .card-header h3 {
@@ -51,15 +91,18 @@
                 font-size: 0.9rem;
                 padding: 1rem 0;
             }
-        }
         .hero-section {
-            background: linear-gradient(rgba(0,0,0,0.2), rgba(0,0,0,0.2)), 
-                        url("{{ url_for('static', filename='blockchain-bg.jpg') }}");
-            background-size: cover;
-            background-position: center;
-            color: white;
-            padding: 6rem 0;
+            background: url("{{ url_for('static', filename='block-blockchain-business-chain.jpg') }}") center center / cover no-repeat !important;
+            color: #f3f3f3;
+            padding: 6rem 0 2rem 0;
             margin-bottom: 2rem;
+            min-height: 50vh;
+            max-height: 60vh;
+            box-shadow: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            flex-direction: column;
         }
         
         .feature-card {
@@ -158,7 +201,7 @@
         }
     </style>
 </head>
-<body class="bg-light">
+<body style="background: transparent;">
     <!-- Barra de navegación -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container">
@@ -181,14 +224,12 @@
         <div class="container text-center">
             <div class="row justify-content-center">
                 <div class="col-lg-8">
-                    <h1 class="display-4 fw-bold mb-4">Conectando Talentos Blockchain</h1>
-                    <p class="lead mb-4" style="color:#ffd700; font-weight:bold; text-shadow: 1px 1px 8px #222;">Registro oficial de perfiles Web3 de La Asociación Blockchain de Castilla-La Mancha</p>
-                    <img src="{{ url_for('static', filename='blockchain-icons.svg') }}" alt="Tecnología Blockchain" class="img-fluid" style="max-width: 300px;">
-                     <div class="mt-4">
-                         <span style="font-size:1.5rem; color:#00e676; font-weight:bold; text-shadow: 1px 1px 8px #222;">
-                             Ya somos <span id="user-counter" class="modern-counter"></span> usuarios registrados !!!
-                         </span>
-                     </div>
+                    <div style="margin-top:0.5rem;">
+                        <h1 class="modern-title">Conectando Talentos Blockchain</h1>
+                        <p class="lead mb-3" style="color:#ffd700; font-weight:bold; text-shadow: 1px 1px 8px #222;">Registro oficial de perfiles Web3 de La Asociación Blockchain de Castilla-La Mancha</p>
+                    </div>
+                    <!-- Imagen de logotipo eliminada -->
+                    <!-- Contador eliminado del hero-section -->
                      <script>
                      // Animación contador interactivo
                      function animateCounter(id, end, duration) {
@@ -223,10 +264,7 @@
                          }
                          updateCounter();
                      }
-                     document.addEventListener('DOMContentLoaded', function() {
-                         var numUsuarios = {{ num_usuarios|tojson }};
-                         animateCounter('user-counter', numUsuarios, 3000);
-                     });
+                     // Eliminada llamada a animateCounter en DOMContentLoaded
                      </script>
                 </div>
             </div>
@@ -248,35 +286,29 @@
                                     <label class="form-label">Nombre Completo</label>
                                     <input type="text" name="name" class="form-control" required>
                                 </div>
-                                
                                 <div class="col-md-6">
                                     <label class="form-label">Email</label>
                                     <input type="email" name="email" class="form-control" required>
                                 </div>
-                                
                                 <div class="col-12">
                                     <label class="form-label">Habilidades Técnicas</label>
                                     <input type="text" name="skills" class="form-control" 
                                            placeholder="Ej: Solidity, Python, Smart Contracts..." required>
                                 </div>
-                                
                                 <div class="col-md-4">
                                     <label class="form-label">Años de Experiencia</label>
                                     <input type="number" name="experience_years" class="form-control" min="0" required>
                                 </div>
-                                
                                 <div class="col-md-4">
                                     <label class="form-label">Portfolio (Opcional)</label>
                                     <input type="url" name="portfolio_url" class="form-control" 
-                                           placeholder="https://tuejemplo.com">
+                                           placeholder="Ej: www.tuejemplo.com">
                                 </div>
-                                
                                 <div class="col-md-4">
                                     <label class="form-label">Ubicación</label>
                                     <input type="text" name="location" class="form-control" 
                                            placeholder="Ciudad, País">
                                 </div>
-                                
                                 <div class="col-12 mt-4">
                                     <button type="submit" class="btn btn-primary btn-lg w-100">
                                         <i class="fas fa-paper-plane me-2"></i>Enviar Registro
@@ -284,6 +316,8 @@
                                 </div>
                             </div>
                         </form>
+                    <!-- Contador movido fuera de la columna principal -->
+    <div id="counter-container" class="counter-fixed"></div>
                     </div>
                 </div>
             </div>
@@ -314,18 +348,26 @@
     <script>
         document.getElementById('registrationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const formData = new FormData(e.target);
             const response = await fetch('/submit', {
                 method: 'POST',
                 body: formData
             });
-            
             const result = await response.json();
             showMessage(result);
-            
             if(result.status === 'success') {
                 e.target.reset();
+                // Mostrar el contador debajo del formulario
+                const counterContainer = document.getElementById('counter-container');
+                counterContainer.innerHTML = `<span style="font-size:1.5rem; color:#00e676; font-weight:bold; text-shadow: 1px 1px 8px #222;">Ya somos <span id='user-counter' class='modern-counter'></span> usuarios registrados !!!</span>`;
+                var numUsuarios = result.num_usuarios || 0;
+                animateCounter('user-counter', numUsuarios, 3000);
+                // Mostrar el contador como barra fija en móvil
+                counterContainer.classList.add('show');
+                // Scroll automático al contador para asegurar visibilidad
+                setTimeout(() => {
+                    counterContainer.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }, 500);
             }
         });
 
