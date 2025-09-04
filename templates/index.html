@@ -194,12 +194,20 @@
                         function animateCounter(id, end, duration) {
                             const el = document.getElementById(id);
                             let start = 0;
+                            end = isNaN(end) || end < 0 ? 0 : end;
                             const range = end - start;
                             let current = start;
                             const increment = end > start ? 1 : -1;
-                            const stepTime = Math.abs(Math.floor(duration / range));
+                            const stepTime = range > 0 ? Math.abs(Math.floor(duration / range)) : duration;
                             el.textContent = start;
                             el.style.transition = 'color 0.3s, text-shadow 0.3s';
+                            if (range === 0) {
+                                el.textContent = end;
+                                el.style.color = '#00e676';
+                                el.style.textShadow = '0 0 18px #00e676, 1px 1px 8px #222';
+                                el.classList.add('bounce-anim');
+                                return;
+                            }
                             function updateCounter() {
                                 current += increment;
                                 el.textContent = current;
