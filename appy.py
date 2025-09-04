@@ -71,7 +71,13 @@ def admin_required(f):
 # ────────────────────────────────────────────────
 @app.route('/')
 def index():
-    return render_template('index.html')
+    # Obtener número de usuarios registrados
+    try:
+        response = developers_table.select('id').execute()
+        num_usuarios = len(response.data) if response and hasattr(response, 'data') else 0
+    except Exception:
+        num_usuarios = 0
+    return render_template('index.html', num_usuarios=num_usuarios)
 
 @app.route('/submit', methods=['POST'])
 def submit():
