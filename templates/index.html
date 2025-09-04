@@ -187,46 +187,47 @@
                     <img src="{{ url_for('static', filename='blockchain-icons.svg') }}" alt="Tecnología Blockchain" class="img-fluid" style="max-width: 300px;">
                     <div class="mt-4">
                         <span style="font-size:1.5rem; color:#00e676; font-weight:bold; text-shadow: 1px 1px 8px #222;">
-                            Ya somos <span id="user-counter" class="modern-counter"></span> usuarios registrados !!!
+                            Ya somos <span id="user-counter" class="modern-counter"></span> usuarios !!!
                         </span>
-                        <script>
-                        // Animación contador interactivo
-                        function animateCounter(id, end, duration) {
-                            const el = document.getElementById(id);
-                            let start = 0;
-                            end = isNaN(end) || end < 0 ? 0 : end;
-                            const range = end - start;
-                            let current = start;
-                            const increment = end > start ? 1 : -1;
-                            const stepTime = range > 0 ? Math.abs(Math.floor(duration / range)) : duration;
-                            el.textContent = start;
-                            el.style.transition = 'color 0.3s, text-shadow 0.3s';
-                            if (range === 0) {
-                                el.textContent = end;
-                                el.style.color = '#00e676';
-                                el.style.textShadow = '0 0 18px #00e676, 1px 1px 8px #222';
-                                el.classList.add('bounce-anim');
-                                return;
-                            }
-                            function updateCounter() {
-                                current += increment;
-                                el.textContent = current;
-                                el.style.color = '#ffd700';
-                                el.style.textShadow = '0 0 12px #ffd700, 1px 1px 8px #222';
-                                if (current != end) {
-                                    setTimeout(updateCounter, stepTime);
-                                } else {
-                                    el.style.color = '#00e676';
-                                    el.style.textShadow = '0 0 18px #00e676, 1px 1px 8px #222';
-                                    el.classList.add('bounce-anim');
-                                }
-                            }
-                            updateCounter();
-                        }
-                        document.addEventListener('DOMContentLoaded', function() {
-                            animateCounter('user-counter', Number('{{ num_usuarios }}'), 5000);
-                        });
-                        </script>
+    <script>
+    // Animación contador interactivo
+    function animateCounter(id, end, duration) {
+        const el = document.getElementById(id);
+        let start = 0;
+        end = isNaN(end) || end < 0 ? 0 : end;
+        const range = end - start;
+        let current = start;
+        const increment = end > start ? 1 : -1;
+        const stepTime = range > 0 ? Math.abs(Math.floor(duration / range)) : duration;
+        el.textContent = start;
+        el.style.transition = 'color 0.3s, text-shadow 0.3s';
+        if (range === 0) {
+            el.textContent = end;
+            el.style.color = '#00e676';
+            el.style.textShadow = '0 0 18px #00e676, 1px 1px 8px #222';
+            el.classList.add('bounce-anim');
+            return;
+        }
+        function updateCounter() {
+            current += increment;
+            el.textContent = current;
+            el.style.color = '#ffd700';
+            el.style.textShadow = '0 0 12px #ffd700, 1px 1px 8px #222';
+            if (current != end) {
+                setTimeout(updateCounter, stepTime);
+            } else {
+                el.style.color = '#00e676';
+                el.style.textShadow = '0 0 18px #00e676, 1px 1px 8px #222';
+                el.classList.add('bounce-anim');
+            }
+        }
+        updateCounter();
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+    var numUsuarios = {{ num_usuarios|tojson }};
+        animateCounter('user-counter', numUsuarios, 5000);
+    });
+    </script>
                         <!-- Animación bounce se mantiene en el <style> principal -->
                     </div>
                 </div>
