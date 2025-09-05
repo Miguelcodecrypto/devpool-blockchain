@@ -300,7 +300,7 @@
                                     <input type="number" name="experience_years" class="form-control" min="0" required>
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label">Portfolio (Opcional)</label>
+                                    <label class="form-label">Portfolio, Web, LinkedIn (Opcional)</label>
                      <input type="text" name="portfolio_url" class="form-control" 
                          placeholder="Ej: www.tuejemplo.com">
                                 </div>
@@ -328,12 +328,9 @@
     <section class="container my-5">
         <div class="row justify-content-center">
             <div class="col-lg-8 text-center">
-                <h4 class="mb-3">Webs de referencia</h4>
+                <h4 class="mb-3">Web de referencia</h4>
                 <a href="https://www.clmblockchain.tech/" target="_blank" class="btn btn-outline-primary m-2">
                     <i class="fas fa-globe"></i> clmblockchain.tech
-                </a>
-                <a href="https://clmblockchain.org/" target="_blank" class="btn btn-outline-success m-2">
-                    <i class="fas fa-globe"></i> clmblockchain.org
                 </a>
             </div>
         </div>
@@ -347,10 +344,9 @@
                 <a href="https://t.me/+4QeI7xwu-0Q0ZTg0" target="_blank" class="text-light mx-3" title="Telegram"><i class="fab fa-telegram social-icon"></i></a>
                 <a href="https://discord.com/invite/WKjF88rDFN" target="_blank" class="text-light mx-3" title="Discord"><i class="fab fa-discord social-icon"></i></a>
                 <a href="https://www.youtube.com/@AsociacionBlockchainCLM" target="_blank" class="text-light mx-3" title="YouTube"><i class="fab fa-youtube social-icon"></i></a>
-                <a href="https://github.com/CLMblockchain" target="_blank" class="text-light mx-3" title="GitHub"><i class="fab fa-github social-icon"></i></a>
             </div>
             <p class="mb-0 small">
-                © 2024 Asociación Blockchain de Castilla-La Mancha<br>
+                Asociación Blockchain de Castilla-La Mancha - Fundada en 2024<br>
                 Contacto: contacto@clmblockchain.org
             </p>
         </div>
@@ -394,7 +390,7 @@
             message.className = `alert-message ${data.status === 'success' ? 'alert-success' : 'alert-error'}`;
             message.innerHTML = `
                 <h5 class="mb-2">${data.message}</h5>
-                <p class="small mb-0">${data.details}</p>
+                ${data.details ? `<p class="small mb-0">${data.details}</p>` : ''}
             `;
             
             container.appendChild(message);
