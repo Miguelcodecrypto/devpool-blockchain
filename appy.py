@@ -1,4 +1,5 @@
 from flask import Flask, request, jsonify, render_template, send_file, redirect, url_for
+from flask_mail import Mail, Message
 from datetime import datetime
 import re
 import json
@@ -14,6 +15,19 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'clave_secreta_123')
+
+# ────────────────────────────────────────────────
+# Configuración de Flask-Mail
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
+app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', os.environ.get('MAIL_USERNAME'))
+
+# Inicializar Flask-Mail
+mail = Mail(app)
 
 # ────────────────────────────────────────────────
 # Configuración de Supabase
@@ -57,6 +71,74 @@ def add_header(response):
 def is_valid_email(email: str) -> bool:
     pattern = r'^[\w\.-]+@[\w\.-]+\.\w+$'
     return re.match(pattern, email) is not None
+
+# ────────────────────────────────────────────────
+# ENVÍO DE EMAILS
+def send_welcome_email(user_name: str, user_email: str, user_skills: str):
+    """Envía email de bienvenida al usuario registrado"""
+    try:
+        # Renderizar template de email
+        email_html = render_template('emails/welcome_email.html', 
+                                    user_name=user_name, 
+                                    user_skills=user_skills)
+        
+        msg = Message(
+            subject='🚀 ¡Bienvenido al DevPool Blockchain CLM!',
+            recipients=[user_email],
+            html=email_html,
+            sender=app.config['MAIL_DEFAULT_SENDER']
+        )
+        
+        mail.send(msg)
+        print(f"✅ Email de bienvenida enviado a {user_email}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error enviando email a {user_email}: {str(e)}")
+        return False
+
+def send_admin_notification(user_data: dict):
+    """Envía notificación al admin sobre nuevo registro"""
+    try:
+        admin_email = os.environ.get('ADMIN_EMAIL')
+        if not admin_email:
+            print("⚠️ ADMIN_EMAIL no configurado, saltando notificación admin")
+            return False
+            
+        msg = Message(
+            subject=f'🔔 Nuevo registro en DevPool: {user_data.get("name")}',
+            recipients=[admin_email],
+            html=f'''
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+                <h2 style="color: #6366f1;">🎉 Nuevo Desarrollador Registrado</h2>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                    <h3>Información del registro:</h3>
+                    <p><strong>Nombre:</strong> {user_data.get("name")}</p>
+                    <p><strong>Email:</strong> {user_data.get("email")}</p>
+                    <p><strong>Habilidades:</strong> {user_data.get("skills")}</p>
+                    <p><strong>Experiencia:</strong> {user_data.get("experience_years")} años</p>
+                    <p><strong>Portfolio:</strong> {user_data.get("portfolio_url", "No proporcionado")}</p>
+                    <p><strong>Ubicación:</strong> {user_data.get("location", "No proporcionada")}</p>
+                    <p><strong>IP:</strong> {user_data.get("ip")}</p>
+                    <p><strong>Fecha:</strong> {user_data.get("created_at")}</p>
+                </div>
+                
+                <div style="background: #6366f1; color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                    <p style="margin: 0;">DevPool Blockchain CLM - Panel de Administración</p>
+                </div>
+            </div>
+            ''',
+            sender=app.config['MAIL_DEFAULT_SENDER']
+        )
+        
+        mail.send(msg)
+        print(f"✅ Notificación de admin enviada para {user_data.get('name')}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error enviando notificación admin: {str(e)}")
+        return False
 
 # ────────────────────────────────────────────────
 # DECORADOR PARA ÁREAS PROTEGIDAS
@@ -122,17 +204,35 @@ def submit():
         # Insertar en Supabase
         response = developers_table.insert(developer_data).execute()
         if response.data:
+            # Enviar email de bienvenida al usuario
+            email_sent = send_welcome_email(
+                user_name=data.get('name'),
+                user_email=data.get('email'),
+                user_skills=data.get('skills')
+            )
+            
+            # Enviar notificación al administrador
+            admin_notified = send_admin_notification(developer_data)
+            
             # Obtener el número actualizado de usuarios
             try:
                 count_response = developers_table.select('id').execute()
                 num_usuarios = len(count_response.data) if count_response and hasattr(count_response, 'data') else 0
             except Exception:
                 num_usuarios = 0
+                
+            # Mensaje de éxito con información del email
+            success_message = '🎉 ¡Registro exitoso!'
+            if email_sent:
+                success_message += ' 📧 Revisa tu email para la bienvenida!'
+            
             return jsonify({
                 'status': 'success',
-                'message': '🎉 ¡Registro exitoso!',
+                'message': success_message,
                 'animation': 'confetti',
-                'num_usuarios': num_usuarios
+                'num_usuarios': num_usuarios,
+                'email_sent': email_sent,
+                'admin_notified': admin_notified
             }), 201
         else:
             error = response.error.message if response.error else "Error desconocido"
