@@ -29,9 +29,15 @@ app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', os.env
 # Configuración adicional para evitar timeouts en producción
 app.config['MAIL_SUPPRESS_SEND'] = os.environ.get('MAIL_SUPPRESS_SEND', 'False').lower() == 'true'
 
-# Inicializar Flask-Mail solo si está configurado
+# Inicializar Flask-Mail solo si está configurado Y en desarrollo
 try:
-    if app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
+    # En producción (Render), deshabilitar emails por defecto para evitar timeouts
+    is_production = os.environ.get('RENDER') or os.environ.get('PORT', '5000') == '10000'
+    
+    if is_production:
+        print("🔴 Entorno de producción detectado - Sistema de email DESHABILITADO para evitar timeouts")
+        mail = None
+    elif app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
         mail = Mail(app)
         print("✅ Sistema de email inicializado")
     else:
@@ -90,8 +96,9 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
     """Envía email de bienvenida al usuario registrado"""
     global mail
     
+    # Si mail es None (producción o no configurado), no hacer nada
     if not mail:
-        print("⚠️ Sistema de email no disponible")
+        print(f"📧 Email deshabilitado - no se envía email a {user_email}")
         return False
         
     try:
@@ -126,10 +133,18 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
 
 def send_admin_notification(user_data: dict):
     """Envía notificación al admin sobre nuevo registro"""
+    global mail
+    
+    # Si mail es None (producción o no configurado), no hacer nada
+    if not mail:
+        print("📧 Email deshabilitado - no se envía notificación admin")
+        return False
+        
     try:
         admin_email = os.environ.get('ADMIN_EMAIL')
-        if not admin_email:
-            print("⚠️ ADMIN_EMAIL no configurado, saltando notificación admin")
+        # Verificar configuración de email
+        if not admin_email or not app.config.get('MAIL_USERNAME'):
+            print("⚠️ Email no configurado, saltando notificación admin")
             return False
             
         msg = Message(
@@ -231,12 +246,13 @@ def submit():
         # Insertar en Supabase
         response = developers_table.insert(developer_data).execute()
         if response.data:
-            # Intentar enviar emails (no crítico si falla)
+            # En producción, no intentar emails para evitar timeouts
             email_sent = False
             admin_notified = False
             
-            # Solo intentar emails si están configurados y mail está disponible
-            if mail and app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
+            # Solo enviar emails en desarrollo (cuando mail está disponible)
+            if mail:
+                print("📧 Intentando enviar emails...")
                 try:
                     email_sent = send_welcome_email(
                         user_name=data.get('name'),
@@ -248,7 +264,7 @@ def submit():
                 except Exception as e:
                     print(f"⚠️ Error general en sistema de emails: {str(e)}")
             else:
-                print("⚠️ Sistema de email no configurado, registro exitoso sin envío de emails")
+                print("📧 Sistema de email deshabilitado - registro exitoso sin envío de emails")
             
             # Obtener el número actualizado de usuarios
             try:
