@@ -32,11 +32,11 @@ app.config['MAIL_SUPPRESS_SEND'] = os.environ.get('MAIL_SUPPRESS_SEND', 'False')
 # Inicializar Flask-Mail solo si está configurado Y en desarrollo
 try:
     # Control manual de emails en producción
-    enable_emails = os.environ.get('ENABLE_EMAILS', 'False').lower() == 'true'
+    enable_emails = os.environ.get('ENABLE_EMAIL', 'False').lower() == 'true'
     is_production = os.environ.get('RENDER') or os.environ.get('PORT', '5000') == '10000'
     
     if is_production and not enable_emails:
-        print("🔴 Emails deshabilitados en producción (ENABLE_EMAILS=False)")
+        print("🔴 Emails deshabilitados en producción (ENABLE_EMAIL=False)")
         mail = None
     elif app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
         mail = Mail(app)
