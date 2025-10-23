@@ -127,10 +127,13 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
         
         def send_email_thread():
             try:
+                print(f"🔧 [WELCOME] Conectando a SMTP {app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}")
                 with app.app_context():
                     mail.send(msg)
+                print(f"🔧 [WELCOME] Email enviado exitosamente")
                 email_result['success'] = True
             except Exception as e:
+                print(f"🔧 [WELCOME] Error SMTP detallado: {type(e).__name__}: {str(e)}")
                 email_result['error'] = str(e)
         
         # Crear y ejecutar thread con timeout
@@ -204,10 +207,13 @@ def send_admin_notification(user_data: dict):
         
         def send_email_thread():
             try:
+                print(f"🔧 [ADMIN] Conectando a SMTP {app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}")
                 with app.app_context():
                     mail.send(msg)
+                print(f"🔧 [ADMIN] Email enviado exitosamente")
                 email_result['success'] = True
             except Exception as e:
+                print(f"🔧 [ADMIN] Error SMTP detallado: {type(e).__name__}: {str(e)}")
                 email_result['error'] = str(e)
         
         # Crear y ejecutar thread con timeout
