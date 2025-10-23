@@ -31,11 +31,12 @@ app.config['MAIL_SUPPRESS_SEND'] = os.environ.get('MAIL_SUPPRESS_SEND', 'False')
 
 # Inicializar Flask-Mail solo si está configurado Y en desarrollo
 try:
-    # En producción (Render), deshabilitar emails por defecto para evitar timeouts
+    # Control manual de emails en producción
+    enable_emails = os.environ.get('ENABLE_EMAILS', 'False').lower() == 'true'
     is_production = os.environ.get('RENDER') or os.environ.get('PORT', '5000') == '10000'
     
-    if is_production:
-        print("🔴 Entorno de producción detectado - Sistema de email DESHABILITADO para evitar timeouts")
+    if is_production and not enable_emails:
+        print("🔴 Emails deshabilitados en producción (ENABLE_EMAILS=False)")
         mail = None
     elif app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
         mail = Mail(app)
@@ -119,12 +120,34 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
             sender=app.config['MAIL_DEFAULT_SENDER']
         )
         
-        # Timeout más corto para evitar worker timeout
-        with app.app_context():
-            mail.send(msg)
+        # Timeout usando threading para compatibilidad multiplataforma
+        import threading
         
-        print(f"✅ Email de bienvenida enviado a {user_email}")
-        return True
+        email_result = {'success': False, 'error': None}
+        
+        def send_email_thread():
+            try:
+                with app.app_context():
+                    mail.send(msg)
+                email_result['success'] = True
+            except Exception as e:
+                email_result['error'] = str(e)
+        
+        # Crear y ejecutar thread con timeout
+        thread = threading.Thread(target=send_email_thread)
+        thread.start()
+        thread.join(timeout=10)  # Timeout de 10 segundos
+        
+        if thread.is_alive():
+            print(f"⏰ Timeout enviando email a {user_email}")
+            return False
+        
+        if email_result['success']:
+            print(f"✅ Email de bienvenida enviado a {user_email}")
+            return True
+        else:
+            print(f"❌ Error enviando email a {user_email}: {email_result['error']}")
+            return False
         
     except Exception as e:
         print(f"⚠️ Error enviando email a {user_email}: {str(e)}")
@@ -174,9 +197,34 @@ def send_admin_notification(user_data: dict):
             sender=app.config['MAIL_DEFAULT_SENDER']
         )
         
-        mail.send(msg)
-        print(f"✅ Notificación de admin enviada para {user_data.get('name')}")
-        return True
+        # Timeout usando threading para compatibilidad multiplataforma
+        import threading
+        
+        email_result = {'success': False, 'error': None}
+        
+        def send_email_thread():
+            try:
+                with app.app_context():
+                    mail.send(msg)
+                email_result['success'] = True
+            except Exception as e:
+                email_result['error'] = str(e)
+        
+        # Crear y ejecutar thread con timeout
+        thread = threading.Thread(target=send_email_thread)
+        thread.start()
+        thread.join(timeout=10)  # Timeout de 10 segundos
+        
+        if thread.is_alive():
+            print(f"⏰ Timeout enviando notificación de admin para {user_data.get('name')}")
+            return False
+        
+        if email_result['success']:
+            print(f"✅ Notificación de admin enviada para {user_data.get('name')}")
+            return True
+        else:
+            print(f"❌ Error enviando notificación admin: {email_result['error']}")
+            return False
         
     except Exception as e:
         print(f"❌ Error enviando notificación admin: {str(e)}")
