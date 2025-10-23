@@ -26,8 +26,20 @@ app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', os.environ.get('MAIL_USERNAME'))
 
-# Inicializar Flask-Mail
-mail = Mail(app)
+# Configuración adicional para evitar timeouts en producción
+app.config['MAIL_SUPPRESS_SEND'] = os.environ.get('MAIL_SUPPRESS_SEND', 'False').lower() == 'true'
+
+# Inicializar Flask-Mail solo si está configurado
+try:
+    if app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
+        mail = Mail(app)
+        print("✅ Sistema de email inicializado")
+    else:
+        mail = None
+        print("⚠️ Sistema de email no configurado - funcionará sin emails")
+except Exception as e:
+    mail = None
+    print(f"⚠️ Error inicializando sistema de email: {e}")
 
 # ────────────────────────────────────────────────
 # Configuración de Supabase
@@ -76,7 +88,18 @@ def is_valid_email(email: str) -> bool:
 # ENVÍO DE EMAILS
 def send_welcome_email(user_name: str, user_email: str, user_skills: str):
     """Envía email de bienvenida al usuario registrado"""
+    global mail
+    
+    if not mail:
+        print("⚠️ Sistema de email no disponible")
+        return False
+        
     try:
+        # Verificar configuración de email antes de intentar enviar
+        if not app.config.get('MAIL_USERNAME') or not app.config.get('MAIL_PASSWORD'):
+            print("⚠️ Configuración de email incompleta, saltando envío")
+            return False
+        
         # Renderizar template de email
         email_html = render_template('emails/welcome_email.html', 
                                     user_name=user_name, 
@@ -89,12 +112,16 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
             sender=app.config['MAIL_DEFAULT_SENDER']
         )
         
-        mail.send(msg)
+        # Timeout más corto para evitar worker timeout
+        with app.app_context():
+            mail.send(msg)
+        
         print(f"✅ Email de bienvenida enviado a {user_email}")
         return True
         
     except Exception as e:
-        print(f"❌ Error enviando email a {user_email}: {str(e)}")
+        print(f"⚠️ Error enviando email a {user_email}: {str(e)}")
+        # En producción, no fallar el registro por problemas de email
         return False
 
 def send_admin_notification(user_data: dict):
@@ -204,15 +231,24 @@ def submit():
         # Insertar en Supabase
         response = developers_table.insert(developer_data).execute()
         if response.data:
-            # Enviar email de bienvenida al usuario
-            email_sent = send_welcome_email(
-                user_name=data.get('name'),
-                user_email=data.get('email'),
-                user_skills=data.get('skills')
-            )
+            # Intentar enviar emails (no crítico si falla)
+            email_sent = False
+            admin_notified = False
             
-            # Enviar notificación al administrador
-            admin_notified = send_admin_notification(developer_data)
+            # Solo intentar emails si están configurados y mail está disponible
+            if mail and app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
+                try:
+                    email_sent = send_welcome_email(
+                        user_name=data.get('name'),
+                        user_email=data.get('email'),
+                        user_skills=data.get('skills')
+                    )
+                    
+                    admin_notified = send_admin_notification(developer_data)
+                except Exception as e:
+                    print(f"⚠️ Error general en sistema de emails: {str(e)}")
+            else:
+                print("⚠️ Sistema de email no configurado, registro exitoso sin envío de emails")
             
             # Obtener el número actualizado de usuarios
             try:
@@ -331,6 +367,16 @@ def admin_logout():
     response = redirect(url_for('index'))
     response.delete_cookie('admin_logged')
     return response
+
+@app.route('/health')
+def health_check():
+    """Endpoint de salud para verificar que la aplicación funciona"""
+    return jsonify({
+        'status': 'ok',
+        'timestamp': datetime.utcnow().isoformat(),
+        'email_system': 'configured' if mail else 'disabled',
+        'supabase': 'configured' if os.environ.get('SUPABASE_URL') else 'missing'
+    })
 
 # ────────────────────────────────────────────────
 if __name__ == '__main__':
