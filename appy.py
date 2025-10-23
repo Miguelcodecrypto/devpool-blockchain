@@ -136,7 +136,7 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
         # Crear y ejecutar thread con timeout
         thread = threading.Thread(target=send_email_thread)
         thread.start()
-        thread.join(timeout=10)  # Timeout de 10 segundos
+        thread.join(timeout=30)  # Timeout de 30 segundos (aumentado para SMTP lento)
         
         if thread.is_alive():
             print(f"⏰ Timeout enviando email a {user_email}")
@@ -213,7 +213,7 @@ def send_admin_notification(user_data: dict):
         # Crear y ejecutar thread con timeout
         thread = threading.Thread(target=send_email_thread)
         thread.start()
-        thread.join(timeout=10)  # Timeout de 10 segundos
+        thread.join(timeout=30)  # Timeout de 30 segundos (aumentado para SMTP lento)
         
         if thread.is_alive():
             print(f"⏰ Timeout enviando notificación de admin para {user_data.get('name')}")
