@@ -334,8 +334,8 @@ def admin_logout():
 
 # ────────────────────────────────────────────────
 if __name__ == '__main__':
-    # Configuración importante para producción
-    debug_mode = True  # Activar modo debug siempre
+    # Configuración para desarrollo y producción
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     port = int(os.environ.get('PORT', 5000))
     app.run(
         debug=debug_mode,
