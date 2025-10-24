@@ -113,9 +113,10 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
                                     user_name=user_name, 
                                     user_skills=user_skills)
         
-        # SOLUCIÓN DIRECTA SIN THREADING para Gmail
+        # SOLUCIÓN DIRECTA CON TIMEOUT para Gmail
         import smtplib
         import ssl
+        import socket
         from email.mime.multipart import MIMEMultipart
         from email.mime.text import MIMEText
         
@@ -131,16 +132,24 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
         html_part = MIMEText(email_html, "html")
         message.attach(html_part)
         
-        # Conectar a Gmail con SSL directo
-        context = ssl.create_default_context()
+        # Configurar timeout para socket
+        original_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(15)  # 15 segundos timeout
         
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-            server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-            text = message.as_string()
-            server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
+        try:
+            # Conectar a Gmail con SSL directo
+            context = ssl.create_default_context()
             
-        print(f"✅ Email de bienvenida enviado a {user_email}")
-        return True
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context, timeout=15) as server:
+                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                text = message.as_string()
+                server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
+                
+            print(f"✅ Email de bienvenida enviado a {user_email}")
+            return True
+        finally:
+            # Restaurar timeout original
+            socket.setdefaulttimeout(original_timeout)
         
     except Exception as e:
         print(f"⚠️ Error enviando email a {user_email}: {str(e)}")
@@ -204,16 +213,25 @@ def send_admin_notification(user_data: dict):
         html_part = MIMEText(admin_html, "html")
         message.attach(html_part)
         
-        # Conectar a Gmail con SSL directo
+        # Conectar a Gmail con SSL directo y timeout
         context = ssl.create_default_context()
         
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-            server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-            text = message.as_string()
-            server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
-            
-        print(f"✅ Notificación de admin enviada para {user_data.get('name')}")
-        return True
+        # Configurar timeout para socket
+        import socket
+        original_timeout = socket.getdefaulttimeout()
+        socket.setdefaulttimeout(15)  # 15 segundos timeout
+        
+        try:
+            with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context, timeout=15) as server:
+                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                text = message.as_string()
+                server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
+                
+            print(f"✅ Notificación de admin enviada para {user_data.get('name')}")
+            return True
+        finally:
+            # Restaurar timeout original
+            socket.setdefaulttimeout(original_timeout)
         
     except Exception as e:
         print(f"❌ Error enviando notificación admin: {str(e)}")
