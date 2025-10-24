@@ -138,8 +138,8 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
                 with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], 
                                      context=context, timeout=30) as server:
                     server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                    text = message.as_string()
-                    server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
+                    print("🔧 [WELCOME] Enviando mensaje...")
+                    server.send_message(message)
             else:
                 # TLS (puerto 587)
                 print(f"🔧 [WELCOME] Usando TLS en puerto {app.config['MAIL_PORT']}")
@@ -150,8 +150,7 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
                     print("🔧 [WELCOME] Autenticando...")
                     server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
                     print("🔧 [WELCOME] Enviando mensaje...")
-                    text = message.as_string()
-                    server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
+                    server.send_message(message)
         except Exception as smtp_error:
             print(f"🔧 [WELCOME] Error SMTP específico: {type(smtp_error).__name__}: {str(smtp_error)}")
             raise smtp_error
@@ -223,8 +222,7 @@ def send_admin_notification(user_data: dict):
                 with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], 
                                      context=context, timeout=30) as server:
                     server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                    text = message.as_string()
-                    server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
+                    server.send_message(message)
             else:
                 # TLS (puerto 587)
                 print(f"🔧 [ADMIN] Usando TLS en puerto {app.config['MAIL_PORT']}")
@@ -235,8 +233,7 @@ def send_admin_notification(user_data: dict):
                     print("🔧 [ADMIN] Autenticando...")
                     server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
                     print("🔧 [ADMIN] Enviando mensaje...")
-                    text = message.as_string()
-                    server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
+                    server.send_message(message)
         except Exception as smtp_error:
             print(f"🔧 [ADMIN] Error SMTP específico: {type(smtp_error).__name__}: {str(smtp_error)}")
             raise smtp_error
