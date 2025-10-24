@@ -8,6 +8,10 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from dotenv import load_dotenv
 from supabase import create_client, Client
+import smtplib
+import ssl
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 # Cargar variables de entorno
 load_dotenv()
@@ -17,15 +21,29 @@ app.secret_key = os.environ.get('SECRET_KEY', 'fallback_secret_key')
 
 # Configuración de correo DonDominio
 try:
-    # Configuración SMTP DonDominio - FORZAR CONFIGURACIÓN CORRECTA
+    # Configuración SMTP DonDominio - SOPORTE MÚLTIPLES PUERTOS
     app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.panel247.com')
-    app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+    app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 2525))
     
-    # FORZAR TLS para DonDominio puerto 587
-    if app.config['MAIL_SERVER'] == 'smtp.panel247.com' and app.config['MAIL_PORT'] == 587:
-        app.config['MAIL_USE_TLS'] = True
-        app.config['MAIL_USE_SSL'] = False
-        print("🔧 Configuración DonDominio: TLS en puerto 587 (forzado)")
+    # Configuración específica por puerto DonDominio
+    if app.config['MAIL_SERVER'] == 'smtp.panel247.com':
+        if app.config['MAIL_PORT'] == 587:
+            app.config['MAIL_USE_TLS'] = True
+            app.config['MAIL_USE_SSL'] = False
+            print("🔧 Configuración DonDominio: TLS en puerto 587")
+        elif app.config['MAIL_PORT'] == 2525:
+            app.config['MAIL_USE_TLS'] = True
+            app.config['MAIL_USE_SSL'] = False
+            print("🔧 Configuración DonDominio: TLS en puerto 2525 (Render compatible)")
+        elif app.config['MAIL_PORT'] == 465:
+            app.config['MAIL_USE_TLS'] = False
+            app.config['MAIL_USE_SSL'] = True
+            print("🔧 Configuración DonDominio: SSL en puerto 465")
+        else:
+            # Puerto genérico
+            app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
+            app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
+            print(f"🔧 Configuración DonDominio: Puerto {app.config['MAIL_PORT']} genérico")
     else:
         app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
         app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
