@@ -310,6 +310,8 @@ def submit():
                 print(f"🔧 Mail object disponible: {mail is not None}")
                 print(f"🔧 MAIL_USERNAME: {app.config.get('MAIL_USERNAME')}")
                 print(f"🔧 MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
+                print(f"🔧 MAIL_PASSWORD configurado: {'Sí' if app.config.get('MAIL_PASSWORD') else 'NO'}")
+                print(f"🔧 MAIL_PASSWORD longitud: {len(app.config.get('MAIL_PASSWORD', ''))} caracteres")
                 try:
                     print(f"📤 Enviando email de bienvenida a: {data.get('email')}")
                     email_sent = send_welcome_email(
