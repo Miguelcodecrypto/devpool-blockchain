@@ -113,22 +113,32 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
         html_part = MIMEText(email_html, "html")
         message.attach(html_part)
         
-        # Conectar según configuración TLS/SSL
-        if app.config.get('MAIL_USE_SSL'):
-            # SSL (puerto 465)
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], context=context) as server:
-                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                text = message.as_string()
-                server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
-        else:
-            # TLS (puerto 587)
-            with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT']) as server:
-                if app.config.get('MAIL_USE_TLS'):
-                    server.starttls()
-                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                text = message.as_string()
-                server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
+        # Conectar según configuración TLS/SSL con timeout
+        try:
+            if app.config.get('MAIL_USE_SSL'):
+                # SSL (puerto 465)
+                print(f"🔧 [WELCOME] Usando SSL en puerto {app.config['MAIL_PORT']}")
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], 
+                                     context=context, timeout=30) as server:
+                    server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                    text = message.as_string()
+                    server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
+            else:
+                # TLS (puerto 587)
+                print(f"🔧 [WELCOME] Usando TLS en puerto {app.config['MAIL_PORT']}")
+                with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], timeout=30) as server:
+                    if app.config.get('MAIL_USE_TLS'):
+                        print("🔧 [WELCOME] Iniciando STARTTLS...")
+                        server.starttls()
+                    print("🔧 [WELCOME] Autenticando...")
+                    server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                    print("🔧 [WELCOME] Enviando mensaje...")
+                    text = message.as_string()
+                    server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
+        except Exception as smtp_error:
+            print(f"🔧 [WELCOME] Error SMTP específico: {type(smtp_error).__name__}: {str(smtp_error)}")
+            raise smtp_error
             
         print(f"✅ Email de bienvenida enviado a {user_email}")
         return True
@@ -194,22 +204,32 @@ def send_admin_notification(user_data: dict):
         html_part = MIMEText(admin_html, "html")
         message.attach(html_part)
         
-        # Conectar según configuración TLS/SSL
-        if app.config.get('MAIL_USE_SSL'):
-            # SSL (puerto 465)
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], context=context) as server:
-                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                text = message.as_string()
-                server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
-        else:
-            # TLS (puerto 587)
-            with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT']) as server:
-                if app.config.get('MAIL_USE_TLS'):
-                    server.starttls()
-                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                text = message.as_string()
-                server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
+        # Conectar según configuración TLS/SSL con timeout
+        try:
+            if app.config.get('MAIL_USE_SSL'):
+                # SSL (puerto 465)
+                print(f"🔧 [ADMIN] Usando SSL en puerto {app.config['MAIL_PORT']}")
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], 
+                                     context=context, timeout=30) as server:
+                    server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                    text = message.as_string()
+                    server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
+            else:
+                # TLS (puerto 587)
+                print(f"🔧 [ADMIN] Usando TLS en puerto {app.config['MAIL_PORT']}")
+                with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], timeout=30) as server:
+                    if app.config.get('MAIL_USE_TLS'):
+                        print("🔧 [ADMIN] Iniciando STARTTLS...")
+                        server.starttls()
+                    print("🔧 [ADMIN] Autenticando...")
+                    server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                    print("🔧 [ADMIN] Enviando mensaje...")
+                    text = message.as_string()
+                    server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
+        except Exception as smtp_error:
+            print(f"🔧 [ADMIN] Error SMTP específico: {type(smtp_error).__name__}: {str(smtp_error)}")
+            raise smtp_error
             
         print(f"✅ Notificación de admin enviada para {user_data.get('name')}")
         return True
