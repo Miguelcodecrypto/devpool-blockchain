@@ -17,9 +17,6 @@ app.secret_key = os.environ.get('SECRET_KEY', 'fallback_secret_key')
 
 # Configuración de correo DonDominio
 try:
-    # Verificar si el email está habilitado
-    enable_emails = os.environ.get('ENABLE_EMAIL', 'True').lower() == 'true'
-    
     # Configuración SMTP DonDominio - FORZAR CONFIGURACIÓN CORRECTA
     app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.panel247.com')
     app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
@@ -37,13 +34,8 @@ try:
     app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
     app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', app.config['MAIL_USERNAME'])
     
-    # Verificar si está en producción
-    is_production = os.environ.get('RENDER') or os.environ.get('PORT', '5000') == '10000'
-    
-    if is_production and not enable_emails:
-        print("🔴 Emails deshabilitados en producción (ENABLE_EMAIL=False)")
-        mail = None
-    elif app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
+    # Configurar email solo si tiene credenciales
+    if app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
         mail = True  # Marca que el email está configurado
         print("✅ Sistema de email DonDominio configurado")
         print(f"📧 Servidor: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
@@ -85,13 +77,7 @@ except Exception as e:
 # FUNCIONES DE EMAIL CON DONDOMINIO SMTP
 def send_welcome_email(user_name: str, user_email: str, user_skills: str):
     """Envía email de bienvenida al usuario registrado usando DonDominio"""
-    global mail
     
-    # Si mail es None (no configurado), no hacer nada
-    if not mail:
-        print(f"📧 Email deshabilitado - no se envía email a {user_email}")
-        return False
-        
     try:
         # Verificar configuración de email antes de intentar enviar
         if not app.config.get('MAIL_USERNAME') or not app.config.get('MAIL_PASSWORD'):
@@ -158,13 +144,7 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
 
 def send_admin_notification(user_data: dict):
     """Envía notificación al admin sobre nuevo registro usando DonDominio"""
-    global mail
     
-    # Si mail es None (no configurado), no hacer nada
-    if not mail:
-        print("📧 Email deshabilitado - no se envía notificación admin")
-        return False
-        
     try:
         admin_email = os.environ.get('ADMIN_EMAIL')
         # Verificar configuración de email
