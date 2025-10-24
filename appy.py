@@ -15,9 +15,37 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'fallback_secret_key')
 
-# Configuración de correo (temporalmente deshabilitado)
-mail = None
-print("📧 Sistema de email DESHABILITADO temporalmente")
+# Configuración de correo DonDominio
+try:
+    # Verificar si el email está habilitado
+    enable_emails = os.environ.get('ENABLE_EMAIL', 'True').lower() == 'true'
+    
+    # Configuración SMTP DonDominio
+    app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.panel247.com')
+    app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+    app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
+    app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
+    app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
+    app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
+    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', app.config['MAIL_USERNAME'])
+    
+    # Verificar si está en producción
+    is_production = os.environ.get('RENDER') or os.environ.get('PORT', '5000') == '10000'
+    
+    if is_production and not enable_emails:
+        print("🔴 Emails deshabilitados en producción (ENABLE_EMAIL=False)")
+        mail = None
+    elif app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
+        mail = True  # Marca que el email está configurado
+        print("✅ Sistema de email DonDominio configurado")
+        print(f"📧 Servidor: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
+        print(f"📧 Usuario: {app.config['MAIL_USERNAME']}")
+    else:
+        mail = None
+        print("⚠️ Sistema de email no configurado - funcionará sin emails")
+except Exception as e:
+    mail = None
+    print(f"⚠️ Error inicializando sistema de email: {e}")
 
 # ────────────────────────────────────────────────
 # Configuración de Supabase
@@ -45,18 +73,150 @@ except Exception as e:
     admin_table = None
 
 # ────────────────────────────────────────────────
-# FUNCIONES DE EMAIL (TEMPORALMENTE DESHABILITADAS)
+# FUNCIONES DE EMAIL CON DONDOMINIO SMTP
 def send_welcome_email(user_name: str, user_email: str, user_skills: str):
-    """Envía email de bienvenida al usuario registrado - TEMPORALMENTE DESHABILITADO"""
-    print(f"📧 Email deshabilitado temporalmente - no se envía email a {user_email}")
-    print(f"📝 Usuario registrado: {user_name} ({user_email})")
-    return True  # Retornar True para que no falle el registro
+    """Envía email de bienvenida al usuario registrado usando DonDominio"""
+    global mail
+    
+    # Si mail es None (no configurado), no hacer nada
+    if not mail:
+        print(f"📧 Email deshabilitado - no se envía email a {user_email}")
+        return False
+        
+    try:
+        # Verificar configuración de email antes de intentar enviar
+        if not app.config.get('MAIL_USERNAME') or not app.config.get('MAIL_PASSWORD'):
+            print("⚠️ Configuración de email incompleta, saltando envío")
+            return False
+        
+        # Renderizar template de email
+        email_html = render_template('emails/welcome_email.html', 
+                                    user_name=user_name, 
+                                    user_skills=user_skills)
+        
+        # SMTP directo con DonDominio
+        import smtplib
+        import ssl
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        
+        print(f"🔧 [WELCOME] Conectando a DonDominio SMTP...")
+        print(f"� [WELCOME] Servidor: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
+        
+        # Crear mensaje
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "🚀 ¡Bienvenido al DevPool Blockchain CLM!"
+        message["From"] = app.config['MAIL_USERNAME']
+        message["To"] = user_email
+        
+        # Crear parte HTML
+        html_part = MIMEText(email_html, "html")
+        message.attach(html_part)
+        
+        # Conectar según configuración TLS/SSL
+        if app.config.get('MAIL_USE_SSL'):
+            # SSL (puerto 465)
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], context=context) as server:
+                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                text = message.as_string()
+                server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
+        else:
+            # TLS (puerto 587)
+            with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT']) as server:
+                if app.config.get('MAIL_USE_TLS'):
+                    server.starttls()
+                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                text = message.as_string()
+                server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
+            
+        print(f"✅ Email de bienvenida enviado a {user_email}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error enviando email a {user_email}: {type(e).__name__}: {str(e)}")
+        return False
 
 def send_admin_notification(user_data: dict):
-    """Envía notificación al admin sobre nuevo registro - TEMPORALMENTE DESHABILITADO"""
-    print("📧 Notificación admin deshabilitada temporalmente")
-    print(f"📝 Nuevo registro: {user_data.get('name')} - {user_data.get('email')}")
-    return True  # Retornar True para que no falle el registro
+    """Envía notificación al admin sobre nuevo registro usando DonDominio"""
+    global mail
+    
+    # Si mail es None (no configurado), no hacer nada
+    if not mail:
+        print("📧 Email deshabilitado - no se envía notificación admin")
+        return False
+        
+    try:
+        admin_email = os.environ.get('ADMIN_EMAIL')
+        # Verificar configuración de email
+        if not admin_email or not app.config.get('MAIL_USERNAME'):
+            print("⚠️ Email no configurado, saltando notificación admin")
+            return False
+            
+        # Preparar HTML del email admin
+        admin_html = f'''
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #6366f1;">🎉 Nuevo Desarrollador Registrado</h2>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h3>Información del registro:</h3>
+                <p><strong>Nombre:</strong> {user_data.get("name")}</p>
+                <p><strong>Email:</strong> {user_data.get("email")}</p>
+                <p><strong>Habilidades:</strong> {user_data.get("skills")}</p>
+                <p><strong>Experiencia:</strong> {user_data.get("experience_years")} años</p>
+                <p><strong>Portfolio:</strong> {user_data.get("portfolio_url", "No proporcionado")}</p>
+                <p><strong>Ubicación:</strong> {user_data.get("location", "No proporcionada")}</p>
+                <p><strong>IP:</strong> {user_data.get("ip")}</p>
+                <p><strong>Fecha:</strong> {user_data.get("created_at")}</p>
+            </div>
+            
+            <div style="background: #6366f1; color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                <p style="margin: 0;">DevPool Blockchain CLM - Panel de Administración</p>
+            </div>
+        </div>
+        '''
+            
+        # SMTP directo con DonDominio
+        import smtplib
+        import ssl
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        
+        print(f"🔧 [ADMIN] Conectando a DonDominio SMTP...")
+        
+        # Crear mensaje
+        message = MIMEMultipart("alternative")
+        message["Subject"] = f"� Nuevo registro en DevPool: {user_data.get('name')}"
+        message["From"] = app.config['MAIL_USERNAME']
+        message["To"] = admin_email
+        
+        # Crear parte HTML
+        html_part = MIMEText(admin_html, "html")
+        message.attach(html_part)
+        
+        # Conectar según configuración TLS/SSL
+        if app.config.get('MAIL_USE_SSL'):
+            # SSL (puerto 465)
+            context = ssl.create_default_context()
+            with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], context=context) as server:
+                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                text = message.as_string()
+                server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
+        else:
+            # TLS (puerto 587)
+            with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT']) as server:
+                if app.config.get('MAIL_USE_TLS'):
+                    server.starttls()
+                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                text = message.as_string()
+                server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
+            
+        print(f"✅ Notificación de admin enviada para {user_data.get('name')}")
+        return True
+        
+    except Exception as e:
+        print(f"❌ Error enviando notificación admin: {str(e)}")
+        return False
 
 # ────────────────────────────────────────────────
 # DECORADOR PARA ÁREAS PROTEGIDAS
