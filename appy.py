@@ -304,30 +304,36 @@ def submit():
             email_sent = False
             admin_notified = False
             
-            # Solo enviar emails en desarrollo (cuando mail está disponible)
-            if mail:
-                print("📧 Intentando enviar emails...")
-                print(f"🔧 Mail object disponible: {mail is not None}")
-                print(f"🔧 MAIL_USERNAME: {app.config.get('MAIL_USERNAME')}")
-                print(f"🔧 MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
-                try:
-                    print(f"📤 Enviando email de bienvenida a: {data.get('email')}")
-                    email_sent = send_welcome_email(
-                        user_name=data.get('name'),
-                        user_email=data.get('email'),
-                        user_skills=data.get('skills')
-                    )
-                    print(f"📤 Resultado email bienvenida: {email_sent}")
-                    
-                    print(f"📤 Enviando notificación admin para: {data.get('name')}")
-                    admin_notified = send_admin_notification(developer_data)
-                    print(f"📤 Resultado notificación admin: {admin_notified}")
-                except Exception as e:
-                    print(f"⚠️ Error general en sistema de emails: {str(e)}")
-                    import traceback
-                    traceback.print_exc()
-            else:
-                print("📧 Sistema de email deshabilitado - registro exitoso sin envío de emails")
+            # TEMPORALMENTE: Deshabilitar emails para evitar timeouts
+            # TODO: Arreglar configuración de Gmail y habilitar nuevamente
+            print("📧 Emails temporalmente deshabilitados - evitando worker timeouts")
+            email_sent = False
+            admin_notified = False
+            
+            # Código comentado temporalmente:
+            # if mail:
+            #     print("📧 Intentando enviar emails...")
+            #     print(f"🔧 Mail object disponible: {mail is not None}")
+            #     print(f"🔧 MAIL_USERNAME: {app.config.get('MAIL_USERNAME')}")
+            #     print(f"🔧 MAIL_SERVER: {app.config.get('MAIL_SERVER')}")
+            #     try:
+            #         print(f"📤 Enviando email de bienvenida a: {data.get('email')}")
+            #         email_sent = send_welcome_email(
+            #             user_name=data.get('name'),
+            #             user_email=data.get('email'),
+            #             user_skills=data.get('skills')
+            #         )
+            #         print(f"📤 Resultado email bienvenida: {email_sent}")
+            #         
+            #         print(f"📤 Enviando notificación admin para: {data.get('name')}")
+            #         admin_notified = send_admin_notification(developer_data)
+            #         print(f"📤 Resultado notificación admin: {admin_notified}")
+            #     except Exception as e:
+            #         print(f"⚠️ Error general en sistema de emails: {str(e)}")
+            #         import traceback
+            #         traceback.print_exc()
+            # else:
+            #     print("📧 Sistema de email deshabilitado - registro exitoso sin envío de emails")
             
             # Obtener el número actualizado de usuarios
             try:
