@@ -1,5 +1,4 @@
 from flask import Flask, request, jsonify, render_template, send_file, redirect, url_for
-from flask_mail import Mail, Message
 from datetime import datetime
 import re
 import json
@@ -39,8 +38,9 @@ try:
         print("🔴 Emails deshabilitados en producción (ENABLE_EMAIL=False)")
         mail = None
     elif app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
-        mail = Mail(app)
-        print("✅ Sistema de email inicializado")
+        # Ahora usamos SMTP directo - solo marcamos como disponible
+        mail = True  # Marca que el email está configurado
+        print("✅ Sistema de email configurado (SMTP directo)")
     else:
         mail = None
         print("⚠️ Sistema de email no configurado - funcionará sin emails")
@@ -113,44 +113,34 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
                                     user_name=user_name, 
                                     user_skills=user_skills)
         
-        msg = Message(
-            subject='🚀 ¡Bienvenido al DevPool Blockchain CLM!',
-            recipients=[user_email],
-            html=email_html,
-            sender=app.config['MAIL_DEFAULT_SENDER']
-        )
+        # SOLUCIÓN DIRECTA SIN THREADING para Gmail
+        import smtplib
+        import ssl
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
         
-        # Timeout usando threading para compatibilidad multiplataforma
-        import threading
+        print(f"🔧 [WELCOME] Conectando directamente a Gmail SMTP...")
         
-        email_result = {'success': False, 'error': None}
+        # Crear mensaje directamente
+        message = MIMEMultipart("alternative")
+        message["Subject"] = "🚀 ¡Bienvenido al DevPool Blockchain CLM!"
+        message["From"] = app.config['MAIL_USERNAME']
+        message["To"] = user_email
         
-        def send_email_thread():
-            try:
-                print(f"🔧 [WELCOME] Conectando a SMTP {app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}")
-                with app.app_context():
-                    mail.send(msg)
-                print(f"🔧 [WELCOME] Email enviado exitosamente")
-                email_result['success'] = True
-            except Exception as e:
-                print(f"🔧 [WELCOME] Error SMTP detallado: {type(e).__name__}: {str(e)}")
-                email_result['error'] = str(e)
+        # Crear parte HTML
+        html_part = MIMEText(email_html, "html")
+        message.attach(html_part)
         
-        # Crear y ejecutar thread con timeout
-        thread = threading.Thread(target=send_email_thread)
-        thread.start()
-        thread.join(timeout=30)  # Timeout de 30 segundos (aumentado para SMTP lento)
+        # Conectar a Gmail con SSL directo
+        context = ssl.create_default_context()
         
-        if thread.is_alive():
-            print(f"⏰ Timeout enviando email a {user_email}")
-            return False
-        
-        if email_result['success']:
-            print(f"✅ Email de bienvenida enviado a {user_email}")
-            return True
-        else:
-            print(f"❌ Error enviando email a {user_email}: {email_result['error']}")
-            return False
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+            text = message.as_string()
+            server.sendmail(app.config['MAIL_USERNAME'], user_email, text)
+            
+        print(f"✅ Email de bienvenida enviado a {user_email}")
+        return True
         
     except Exception as e:
         print(f"⚠️ Error enviando email a {user_email}: {str(e)}")
@@ -173,64 +163,57 @@ def send_admin_notification(user_data: dict):
             print("⚠️ Email no configurado, saltando notificación admin")
             return False
             
-        msg = Message(
-            subject=f'🔔 Nuevo registro en DevPool: {user_data.get("name")}',
-            recipients=[admin_email],
-            html=f'''
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #6366f1;">🎉 Nuevo Desarrollador Registrado</h2>
-                
-                <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
-                    <h3>Información del registro:</h3>
-                    <p><strong>Nombre:</strong> {user_data.get("name")}</p>
-                    <p><strong>Email:</strong> {user_data.get("email")}</p>
-                    <p><strong>Habilidades:</strong> {user_data.get("skills")}</p>
-                    <p><strong>Experiencia:</strong> {user_data.get("experience_years")} años</p>
-                    <p><strong>Portfolio:</strong> {user_data.get("portfolio_url", "No proporcionado")}</p>
-                    <p><strong>Ubicación:</strong> {user_data.get("location", "No proporcionada")}</p>
-                    <p><strong>IP:</strong> {user_data.get("ip")}</p>
-                    <p><strong>Fecha:</strong> {user_data.get("created_at")}</p>
-                </div>
-                
-                <div style="background: #6366f1; color: white; padding: 15px; border-radius: 10px; text-align: center;">
-                    <p style="margin: 0;">DevPool Blockchain CLM - Panel de Administración</p>
-                </div>
+        # Preparar HTML del email admin
+        admin_html = f'''
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+            <h2 style="color: #6366f1;">🎉 Nuevo Desarrollador Registrado</h2>
+            
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
+                <h3>Información del registro:</h3>
+                <p><strong>Nombre:</strong> {user_data.get("name")}</p>
+                <p><strong>Email:</strong> {user_data.get("email")}</p>
+                <p><strong>Habilidades:</strong> {user_data.get("skills")}</p>
+                <p><strong>Experiencia:</strong> {user_data.get("experience_years")} años</p>
+                <p><strong>Portfolio:</strong> {user_data.get("portfolio_url", "No proporcionado")}</p>
+                <p><strong>Ubicación:</strong> {user_data.get("location", "No proporcionada")}</p>
+                <p><strong>IP:</strong> {user_data.get("ip")}</p>
+                <p><strong>Fecha:</strong> {user_data.get("created_at")}</p>
             </div>
-            ''',
-            sender=app.config['MAIL_DEFAULT_SENDER']
-        )
+            
+            <div style="background: #6366f1; color: white; padding: 15px; border-radius: 10px; text-align: center;">
+                <p style="margin: 0;">DevPool Blockchain CLM - Panel de Administración</p>
+            </div>
+        </div>
+        '''
+            
+        # SOLUCIÓN DIRECTA SIN THREADING para Gmail
+        import smtplib
+        import ssl
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
         
-        # Timeout usando threading para compatibilidad multiplataforma
-        import threading
+        print(f"🔧 [ADMIN] Conectando directamente a Gmail SMTP...")
         
-        email_result = {'success': False, 'error': None}
+        # Crear mensaje directamente  
+        message = MIMEMultipart("alternative")
+        message["Subject"] = f"� Nuevo registro en DevPool: {user_data.get('name')}"
+        message["From"] = app.config['MAIL_USERNAME']
+        message["To"] = admin_email
         
-        def send_email_thread():
-            try:
-                print(f"🔧 [ADMIN] Conectando a SMTP {app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}")
-                with app.app_context():
-                    mail.send(msg)
-                print(f"🔧 [ADMIN] Email enviado exitosamente")
-                email_result['success'] = True
-            except Exception as e:
-                print(f"🔧 [ADMIN] Error SMTP detallado: {type(e).__name__}: {str(e)}")
-                email_result['error'] = str(e)
+        # Crear parte HTML
+        html_part = MIMEText(admin_html, "html")
+        message.attach(html_part)
         
-        # Crear y ejecutar thread con timeout
-        thread = threading.Thread(target=send_email_thread)
-        thread.start()
-        thread.join(timeout=30)  # Timeout de 30 segundos (aumentado para SMTP lento)
+        # Conectar a Gmail con SSL directo
+        context = ssl.create_default_context()
         
-        if thread.is_alive():
-            print(f"⏰ Timeout enviando notificación de admin para {user_data.get('name')}")
-            return False
-        
-        if email_result['success']:
-            print(f"✅ Notificación de admin enviada para {user_data.get('name')}")
-            return True
-        else:
-            print(f"❌ Error enviando notificación admin: {email_result['error']}")
-            return False
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+            text = message.as_string()
+            server.sendmail(app.config['MAIL_USERNAME'], admin_email, text)
+            
+        print(f"✅ Notificación de admin enviada para {user_data.get('name')}")
+        return True
         
     except Exception as e:
         print(f"❌ Error enviando notificación admin: {str(e)}")
