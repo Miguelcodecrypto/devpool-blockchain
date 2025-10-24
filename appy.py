@@ -20,11 +20,19 @@ try:
     # Verificar si el email está habilitado
     enable_emails = os.environ.get('ENABLE_EMAIL', 'True').lower() == 'true'
     
-    # Configuración SMTP DonDominio
+    # Configuración SMTP DonDominio - FORZAR CONFIGURACIÓN CORRECTA
     app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.panel247.com')
     app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
-    app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
-    app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
+    
+    # FORZAR TLS para DonDominio puerto 587
+    if app.config['MAIL_SERVER'] == 'smtp.panel247.com' and app.config['MAIL_PORT'] == 587:
+        app.config['MAIL_USE_TLS'] = True
+        app.config['MAIL_USE_SSL'] = False
+        print("🔧 Configuración DonDominio: TLS en puerto 587 (forzado)")
+    else:
+        app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
+        app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
+    
     app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
     app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', app.config['MAIL_USERNAME'])
@@ -40,6 +48,7 @@ try:
         print("✅ Sistema de email DonDominio configurado")
         print(f"📧 Servidor: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
         print(f"📧 Usuario: {app.config['MAIL_USERNAME']}")
+        print(f"🔒 TLS: {app.config['MAIL_USE_TLS']}, SSL: {app.config['MAIL_USE_SSL']}")
     else:
         mail = None
         print("⚠️ Sistema de email no configurado - funcionará sin emails")
