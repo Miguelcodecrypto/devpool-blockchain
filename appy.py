@@ -21,12 +21,18 @@ app.secret_key = os.environ.get('SECRET_KEY', 'fallback_secret_key')
 
 # Configuración de correo DonDominio
 try:
-    # Configuración SMTP DonDominio - SOPORTE MÚLTIPLES PUERTOS
-    app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.panel247.com')
+    # Configuración SMTP - SOPORTE MÚLTIPLES PROVEEDORES
+    app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'mail.smtp2go.com')
     app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 2525))
     
-    # Configuración específica por puerto DonDominio
-    if app.config['MAIL_SERVER'] == 'smtp.panel247.com':
+    # Configuración específica por proveedor
+    if 'smtp2go.com' in app.config['MAIL_SERVER']:
+        # SMTP2GO - Puerto 2525 TLS (Render compatible)
+        app.config['MAIL_USE_TLS'] = True
+        app.config['MAIL_USE_SSL'] = False
+        print("🔧 Configuración SMTP2GO: TLS en puerto 2525 (Render compatible)")
+    elif 'smtp.panel247.com' in app.config['MAIL_SERVER']:
+        # DonDominio - Configuración por puerto
         if app.config['MAIL_PORT'] == 587:
             app.config['MAIL_USE_TLS'] = True
             app.config['MAIL_USE_SSL'] = False
@@ -39,14 +45,11 @@ try:
             app.config['MAIL_USE_TLS'] = False
             app.config['MAIL_USE_SSL'] = True
             print("🔧 Configuración DonDominio: SSL en puerto 465")
-        else:
-            # Puerto genérico
-            app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
-            app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
-            print(f"🔧 Configuración DonDominio: Puerto {app.config['MAIL_PORT']} genérico")
     else:
+        # Configuración genérica
         app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
         app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
+        print(f"🔧 Configuración genérica: Puerto {app.config['MAIL_PORT']}")
     
     app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
