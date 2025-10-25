@@ -269,17 +269,32 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
+        print("🔍 [SUBMIT] Recibiendo datos del formulario...")
+        
         data = request.form
+        print(f"🔍 [SUBMIT] Datos recibidos: {dict(data)}")
+        print(f"🔍 [SUBMIT] Content-Type: {request.content_type}")
+        
         required_fields = ['name', 'email', 'skills', 'experience_years']
         
-        # Validar campos requeridos
+        # Validar campos requeridos con logging detallado
+        missing_fields = []
         for field in required_fields:
-            if not data.get(field):
-                return jsonify({'error': f'Campo {field} es requerido'}), 400
+            value = data.get(field)
+            print(f"🔍 [SUBMIT] Campo '{field}': '{value}'")
+            if not value or not value.strip():
+                missing_fields.append(field)
+        
+        if missing_fields:
+            print(f"❌ [SUBMIT] Campos faltantes: {missing_fields}")
+            return jsonify({'error': f'Campos requeridos faltantes: {", ".join(missing_fields)}'}), 400
+        
+        print(f"✅ [SUBMIT] Validación inicial completada para: {data.get('name')}")
         
         # Validar email
         email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
         if not re.match(email_pattern, data['email']):
+            print(f"❌ [SUBMIT] Email inválido: {data['email']}")
             return jsonify({'error': 'Email no válido'}), 400
         
         # Validar años de experiencia
