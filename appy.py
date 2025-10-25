@@ -122,7 +122,7 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
         # Crear mensaje
         message = MIMEMultipart("alternative")
         message["Subject"] = "🚀 ¡Bienvenido al DevPool Blockchain CLM!"
-        message["From"] = "devpool@smtp2go.com"  # Email verificado temporalmente
+        message["From"] = "contacto@clmblockchain.org"  # Dominio verificado en SMTP2GO
         message["To"] = user_email
         
         # Crear parte HTML
@@ -205,8 +205,8 @@ def send_admin_notification(user_data: dict):
         
         # Crear mensaje
         message = MIMEMultipart("alternative")
-        message["Subject"] = f"� Nuevo registro en DevPool: {user_data.get('name')}"
-        message["From"] = "devpool@smtp2go.com"  # Email verificado temporalmente
+        message["Subject"] = f"📧 Nuevo registro en DevPool: {user_data.get('name')}"
+        message["From"] = "contacto@clmblockchain.org"  # Dominio verificado en SMTP2GO
         message["To"] = admin_email
         
         # Crear parte HTML
