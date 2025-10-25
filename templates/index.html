@@ -361,15 +361,17 @@
         document.getElementById('registrationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
+            // CAPTURAR DATOS ANTES DE LIMPIAR FORMULARIO
+            const formData = new FormData(e.target);
+            
             // MOSTRAR MENSAJE INMEDIATO
             showSuccessMessage();
             
-            // LIMPIAR FORMULARIO INMEDIATAMENTE
+            // LIMPIAR FORMULARIO DESPUÉS DE CAPTURAR DATOS
             e.target.reset();
             
             // ENVIAR DATOS EN SEGUNDO PLANO
             try {
-                const formData = new FormData(e.target);
                 const response = await fetch('/submit', {
                     method: 'POST',
                     body: formData
