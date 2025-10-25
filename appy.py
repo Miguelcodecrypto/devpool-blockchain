@@ -12,7 +12,6 @@ import smtplib
 import ssl
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-import threading
 
 # Cargar variables de entorno
 load_dotenv()
@@ -247,32 +246,6 @@ def send_admin_notification(user_data: dict):
         return False
 
 # ────────────────────────────────────────────────
-# PROCESAMIENTO DE EMAILS EN SEGUNDO PLANO
-def process_emails_background(user_data: dict):
-    """Procesa envío de emails en segundo plano sin bloquear respuesta"""
-    try:
-        print(f"🔄 [BACKGROUND] Iniciando procesamiento de emails para: {user_data.get('name')}")
-        
-        # Email de bienvenida
-        print(f"📤 [BACKGROUND] Enviando email de bienvenida a: {user_data.get('email')}")
-        email_sent = send_welcome_email(
-            user_name=user_data.get('name'),
-            user_email=user_data.get('email'), 
-            user_skills=user_data.get('skills')
-        )
-        print(f"📤 [BACKGROUND] Resultado email bienvenida: {email_sent}")
-        
-        # Notificación admin
-        print(f"📤 [BACKGROUND] Enviando notificación admin para: {user_data.get('name')}")
-        admin_notified = send_admin_notification(user_data)
-        print(f"📤 [BACKGROUND] Resultado notificación admin: {admin_notified}")
-        
-        print(f"✅ [BACKGROUND] Procesamiento de emails completado para: {user_data.get('name')}")
-        
-    except Exception as e:
-        print(f"❌ [BACKGROUND] Error en procesamiento de emails: {str(e)}")
-
-# ────────────────────────────────────────────────
 # DECORADOR PARA ÁREAS PROTEGIDAS
 def admin_required(f):
     @wraps(f)
@@ -340,8 +313,8 @@ def submit():
         if response.data:
             print(f"✅ Usuario {data['name']} registrado exitosamente")
             
-            # ENVÍO DIRECTO DE EMAILS (threading causaba problemas)
-            print("📧 Enviando emails...")
+            # ENVÍO DIRECTO DE EMAILS - VERSIÓN CORREGIDA
+            print("📧 Enviando emails directamente...")
             
             # Email de bienvenida
             print(f"📤 Enviando email de bienvenida a: {data['email']}")
@@ -357,10 +330,14 @@ def submit():
             admin_notified = send_admin_notification(developer_data)
             print(f"📤 Resultado notificación admin: {admin_notified}")
             
-            # RESPUESTA AL USUARIO (JavaScript maneja UX inmediata)
+            # RESPUESTA AL USUARIO
             return jsonify({
                 'success': True, 
-                'message': '🎉 ¡Registro exitoso! Bienvenido al DevPool Blockchain CLM'
+                'message': '🎉 ¡Registro exitoso! Bienvenido al DevPool Blockchain CLM',
+                'email_status': {
+                    'welcome_sent': email_sent,
+                    'admin_notified': admin_notified
+                }
             }), 200
         else:
             return jsonify({'error': 'Error al registrar el usuario'}), 500
