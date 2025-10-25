@@ -394,6 +394,27 @@ def admin_logout():
     resp.set_cookie('admin_logged', '', expires=0)
     return resp
 
+@app.route('/admin/delete/<string:dev_id>', methods=['POST'])
+@admin_required
+def delete_developer(dev_id):
+    """Eliminar desarrollador por ID"""
+    try:
+        print(f"🗑️ Intentando eliminar desarrollador con ID: {dev_id}")
+        
+        # Eliminar por ID en Supabase
+        response = developers_table.delete().eq('id', dev_id).execute()
+        
+        if response.data:
+            print(f"✅ Desarrollador {dev_id} eliminado exitosamente")
+            return redirect(url_for('admin_dashboard'))
+        else:
+            print(f"❌ No se encontró desarrollador con ID: {dev_id}")
+            return jsonify({'error': 'Desarrollador no encontrado'}), 404
+            
+    except Exception as e:
+        print(f"❌ Error eliminando desarrollador: {e}")
+        return jsonify({'error': 'Error interno del servidor'}), 500
+
 @app.route('/admin/export')
 @admin_required
 def export_developers():
