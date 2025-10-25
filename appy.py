@@ -340,16 +340,24 @@ def submit():
         if response.data:
             print(f"✅ Usuario {data['name']} registrado exitosamente")
             
-            # PROCESAR EMAILS EN SEGUNDO PLANO SIN BLOQUEAR RESPUESTA
-            email_thread = threading.Thread(
-                target=process_emails_background, 
-                args=(developer_data,),
-                daemon=True
-            )
-            email_thread.start()
-            print(f"� Thread de emails iniciado en segundo plano para: {data['name']}")
+            # ENVÍO DIRECTO DE EMAILS (threading causaba problemas)
+            print("📧 Enviando emails...")
             
-            # RESPUESTA INMEDIATA AL USUARIO
+            # Email de bienvenida
+            print(f"📤 Enviando email de bienvenida a: {data['email']}")
+            email_sent = send_welcome_email(
+                user_name=data['name'],
+                user_email=data['email'], 
+                user_skills=data['skills']
+            )
+            print(f"📤 Resultado email bienvenida: {email_sent}")
+            
+            # Notificación admin
+            print(f"📤 Enviando notificación admin para: {data['name']}")
+            admin_notified = send_admin_notification(developer_data)
+            print(f"📤 Resultado notificación admin: {admin_notified}")
+            
+            # RESPUESTA AL USUARIO (JavaScript maneja UX inmediata)
             return jsonify({
                 'success': True, 
                 'message': '🎉 ¡Registro exitoso! Bienvenido al DevPool Blockchain CLM'
