@@ -518,6 +518,41 @@ def test_smtp_connection():
             'type': type(e).__name__
         })
 
+@app.route('/test-send-email')
+def test_send_email():
+    """Endpoint para probar envío real de email"""
+    try:
+        # Datos de prueba
+        test_data = {
+            'name': 'Test Usuario',
+            'email': 'olaya.soriano@gmail.com',
+            'skills': 'Testing, Debugging'
+        }
+        
+        # Intentar envío
+        result = send_welcome_email(
+            user_name=test_data['name'],
+            user_email=test_data['email'],
+            user_skills=test_data['skills']
+        )
+        
+        return jsonify({
+            'status': 'success' if result else 'error',
+            'message': f'Envío de email: {"exitoso" if result else "fallido"}',
+            'details': {
+                'to': test_data['email'],
+                'from': 'contacto@clmblockchain.org',
+                'result': result
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'type': type(e).__name__
+        })
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
