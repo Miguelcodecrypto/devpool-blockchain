@@ -455,6 +455,69 @@ def export_developers():
         print(f"Error en export: {e}")
         return jsonify({'error': 'Error exportando datos'}), 500
 
+@app.route('/test-email-config')
+def test_email_config():
+    """Endpoint temporal para probar configuración de email"""
+    try:
+        # Verificar configuración
+        server = app.config.get('MAIL_SERVER')
+        port = app.config.get('MAIL_PORT')
+        username = app.config.get('MAIL_USERNAME')
+        password = app.config.get('MAIL_PASSWORD')
+        
+        return jsonify({
+            'status': 'success',
+            'config': {
+                'server': server,
+                'port': port,
+                'username': username,
+                'password_configured': bool(password),
+                'use_tls': app.config.get('MAIL_USE_TLS'),
+                'use_ssl': app.config.get('MAIL_USE_SSL')
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        })
+
+@app.route('/test-smtp-connection')
+def test_smtp_connection():
+    """Endpoint temporal para probar conexión SMTP"""
+    try:
+        server = app.config.get('MAIL_SERVER')
+        port = app.config.get('MAIL_PORT')
+        username = app.config.get('MAIL_USERNAME')
+        password = app.config.get('MAIL_PASSWORD')
+        
+        if not username or not password:
+            return jsonify({
+                'status': 'error',
+                'message': 'Credenciales no configuradas'
+            })
+        
+        # Test de conexión
+        context = ssl.create_default_context()
+        server_smtp = smtplib.SMTP(server, port, timeout=30)
+        server_smtp.starttls(context=context)
+        server_smtp.login(username, password)
+        server_smtp.quit()
+        
+        return jsonify({
+            'status': 'success',
+            'message': 'Conexión SMTP exitosa',
+            'server': f"{server}:{port}"
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'type': type(e).__name__
+        })
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
