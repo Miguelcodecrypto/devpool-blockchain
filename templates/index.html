@@ -325,6 +325,53 @@
         </div>
     </div>
 
+    <!-- Modal de Disclaimer de Protección de Datos -->
+    <div class="modal fade" id="dataProtectionModal" tabindex="-1" aria-labelledby="dataProtectionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="dataProtectionModalLabel">
+                        🔒 Protección de Datos Personales
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Información sobre el tratamiento de sus datos personales</strong>
+                    </div>
+                    
+                    <p><strong>Responsable del tratamiento:</strong> Asociación Blockchain de Castilla-La Mancha (ABCLM)</p>
+                    
+                    <p><strong>Finalidad:</strong> Los datos proporcionados serán utilizados para:</p>
+                    <ul>
+                        <li>Gestionar su registro en el DevPool de desarrolladores</li>
+                        <li>Enviar comunicaciones relacionadas con la comunidad blockchain</li>
+                        <li>Facilitar networking y oportunidades profesionales</li>
+                    </ul>
+                    
+                    <p><strong>Legitimación:</strong> Consentimiento del interesado</p>
+                    
+                    <p><strong>Conservación:</strong> Los datos se conservarán mientras mantenga su participación en el DevPool</p>
+                    
+                    <p><strong>Derechos:</strong> Puede ejercer sus derechos de acceso, rectificación, supresión, portabilidad, limitación u oposición contactando a: <strong>contacto@clmblockchain.org</strong></p>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Al hacer clic en "Acepto", consiente el tratamiento de sus datos personales conforme a lo establecido.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="acceptDataProtection">
+                        <i class="fas fa-check"></i> Acepto y continuar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Apartado de webs de referencia -->
     <section class="container my-5">
         <div class="row justify-content-center">
@@ -358,29 +405,55 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let pendingFormData = null;
+        let pendingFormElement = null;
+
         document.getElementById('registrationForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
             // CAPTURAR DATOS ANTES DE LIMPIAR FORMULARIO
             const formData = new FormData(e.target);
             
+            // GUARDAR DATOS Y ELEMENTO PARA PROCESAR DESPUÉS DEL DISCLAIMER
+            pendingFormData = formData;
+            pendingFormElement = e.target;
+            
+            // MOSTRAR MODAL DE PROTECCIÓN DE DATOS
+            const modal = new bootstrap.Modal(document.getElementById('dataProtectionModal'));
+            modal.show();
+        });
+
+        // MANEJAR ACEPTACIÓN DEL DISCLAIMER
+        document.getElementById('acceptDataProtection').addEventListener('click', async () => {
+            // CERRAR MODAL
+            const modal = bootstrap.Modal.getInstance(document.getElementById('dataProtectionModal'));
+            modal.hide();
+            
             // MOSTRAR MENSAJE INMEDIATO
             showSuccessMessage();
             
             // LIMPIAR FORMULARIO DESPUÉS DE CAPTURAR DATOS
-            e.target.reset();
+            if (pendingFormElement) {
+                pendingFormElement.reset();
+            }
             
             // ENVIAR DATOS EN SEGUNDO PLANO
-            try {
-                const response = await fetch('/submit', {
-                    method: 'POST',
-                    body: formData
-                });
-                const result = await response.json();
-                console.log('Registro procesado:', result);
-            } catch (error) {
-                console.error('Error en segundo plano:', error);
+            if (pendingFormData) {
+                try {
+                    const response = await fetch('/submit', {
+                        method: 'POST',
+                        body: pendingFormData
+                    });
+                    const result = await response.json();
+                    console.log('Registro procesado:', result);
+                } catch (error) {
+                    console.error('Error en segundo plano:', error);
+                }
             }
+            
+            // LIMPIAR VARIABLES TEMPORALES
+            pendingFormData = null;
+            pendingFormElement = null;
         });
 
         function showSuccessMessage() {
