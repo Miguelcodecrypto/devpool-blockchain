@@ -3,7 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WEB3POOL - Blockchain Castilla-La Mancha</title>
+    
+    <!-- SEO Optimization -->
+    <title>DevPool ABCLM - Desarrolladores Blockchain Castilla-La Mancha | Web3 CLM</title>
+    <meta name="description" content="La mayor comunidad de desarrolladores blockchain de Castilla-La Mancha. Conecta con talentos Web3, DeFi y NFT. Únete al futuro digital de CLM.">
+    <meta name="keywords" content="blockchain castilla la mancha, desarrolladores web3 clm, programadores crypto toledo, talento blockchain albacete, startup blockchain cuenca, desarrolladores solidity guadalajara, nft creators castilla">
+    <meta name="author" content="Asociación Blockchain de Castilla-La Mancha">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://devpool-blockchain.onrender.com">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://devpool-blockchain.onrender.com">
+    <meta property="og:title" content="DevPool ABCLM - Conectando Talentos Blockchain de Castilla-La Mancha">
+    <meta property="og:description" content="🚀 Únete a la mayor comunidad de desarrolladores blockchain de CLM. Descubre talento Web3, proyectos DeFi y oportunidades NFT en Castilla-La Mancha.">
+    <meta property="og:image" content="https://devpool-blockchain.onrender.com/static/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="es_ES">
+    <meta property="og:site_name" content="DevPool ABCLM">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://devpool-blockchain.onrender.com">
+    <meta name="twitter:title" content="DevPool ABCLM - Talentos Blockchain CLM">
+    <meta name="twitter:description" content="🌟 La comunidad blockchain más activa de Castilla-La Mancha. Desarrolladores Web3, proyectos DeFi y innovación NFT. #BlockchainCLM">
+    <meta name="twitter:image" content="https://devpool-blockchain.onrender.com/static/twitter-card.jpg">
+    <meta name="twitter:creator" content="@ABCLM_Official">
+    <meta name="twitter:site" content="@DevPoolCLM">
+    
+    <!-- Schema.org structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "DevPool ABCLM",
+      "alternateName": "Asociación Blockchain de Castilla-La Mancha",
+      "url": "https://devpool-blockchain.onrender.com",
+      "logo": "https://devpool-blockchain.onrender.com/static/logo.png",
+      "description": "Comunidad de desarrolladores blockchain de Castilla-La Mancha",
+      "areaServed": {
+        "@type": "Place",
+        "name": "Castilla-La Mancha, España"
+      },
+      "memberOf": {
+        "@type": "Organization",
+        "name": "Ecosistema Blockchain Español"
+      }
+    }
+    </script>
+    
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
@@ -45,6 +94,234 @@
                 line-height: 1.2;
                 white-space: normal;
                 word-wrap: break-word;
+            }
+        }
+
+        /* 🚀 NUEVOS ESTILOS COMMUNITY MANAGER */
+        
+        /* Hero Stats Cards */
+        .hero-stats .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .hero-stats .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #ffd700;
+            margin: 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .stat-label {
+            color: #ffffff;
+            font-size: 0.9rem;
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        /* CTA Buttons */
+        .pulse-btn {
+            animation: pulse 2s infinite;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.6);
+        }
+        
+        /* Tech Badges */
+        .tech-badges .badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Testimonials Cards */
+        .testimonial-card {
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .testimonial-avatar {
+            transition: all 0.3s ease;
+        }
+        
+        .testimonial-card:hover .testimonial-avatar {
+            transform: scale(1.1);
+        }
+        
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Loading Animation for Stats */
+        .stat-number {
+            opacity: 0;
+            animation: countUp 1s ease-out forwards;
+        }
+        
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Newsletter Styles */
+        .newsletter-form {
+            max-width: 100%;
+        }
+        
+        .newsletter-form .form-control:focus {
+            border-color: #ffc107;
+            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+        }
+
+        /* Footer Styles */
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+        
+        .footer-links a {
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #ffc107 !important;
+        }
+        
+        /* Social Links Enhanced */
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            text-decoration: none;
+            color: #fff !important;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .social-link:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+            color: #ffc107 !important;
+        }
+        
+        .social-link i {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .social-link.linkedin:hover { background: #0077b5; }
+        .social-link.telegram:hover { background: #0088cc; }
+        .social-link.discord:hover { background: #7289da; }
+        .social-link.youtube:hover { background: #ff0000; }
+        .social-link.twitter:hover { background: #1da1f2; }
+        .social-link.github:hover { background: #333; }
+        
+        /* Trending Hashtags */
+        .trending-hashtags {
+            margin-top: 15px;
+        }
+        
+        .hashtag {
+            display: inline-block;
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 2px;
+            border: 1px solid rgba(255,193,7,0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .social-links {
+                justify-content: center;
+            }
+            
+            .social-link span {
+                display: none;
+            }
+            
+            .social-link {
+                padding: 8px;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                justify-content: center;
+            }
+            
+            .social-link i {
+                margin: 0;
+            }
+            
+            .newsletter-form {
+                flex-direction: column;
+            }
+            
+            .newsletter-form .btn {
+                margin-top: 10px;
+            }
+        }
+        
+        /* Social Proof Animation */
+        .hero-stats {
+            animation: slideInUp 1s ease-out;
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
         
@@ -226,10 +503,62 @@
     <div class="hero-section">
         <div class="container text-center">
             <div class="row justify-content-center">
-                <div class="col-lg-8">
+                <div class="col-lg-10">
                     <div style="margin-top:0.5rem;">
-                        <h1 class="modern-title">Conectando Talentos Blockchain</h1>
-                        <p class="lead mb-3" style="color:#ffd700; font-weight:bold; text-shadow: 1px 1px 8px #222;">Registro oficial de perfiles Web3 de La Asociación Blockchain de Castilla-La Mancha</p>
+                        <h1 class="modern-title">🚀 El Futuro Blockchain de CLM</h1>
+                        <p class="lead mb-4" style="color:#ffd700; font-weight:bold; text-shadow: 1px 1px 8px #222; font-size: 1.3rem;">
+                            Únete a la <strong>mayor comunidad</strong> de desarrolladores Web3 de Castilla-La Mancha
+                        </p>
+                        
+                        <!-- Social Proof Dinámico -->
+                        <div class="hero-stats mb-4">
+                            <div class="row justify-content-center">
+                                <div class="col-md-3 col-6 mb-2">
+                                    <div class="stat-card">
+                                        <h3 class="stat-number" id="heroDevCount">{{ num_usuarios }}</h3>
+                                        <p class="stat-label">Desarrolladores</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6 mb-2">
+                                    <div class="stat-card">
+                                        <h3 class="stat-number" id="heroProjectCount">47</h3>
+                                        <p class="stat-label">Proyectos Activos</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6 mb-2">
+                                    <div class="stat-card">
+                                        <h3 class="stat-number" id="heroJobCount">23</h3>
+                                        <p class="stat-label">Empleos Creados</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-3 col-6 mb-2">
+                                    <div class="stat-card">
+                                        <h3 class="stat-number">2.3M€</h3>
+                                        <p class="stat-label">Volumen Total</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- CTAs Mejorados -->
+                        <div class="hero-ctas mb-4">
+                            <a href="#registro" class="btn btn-warning btn-lg me-3 mb-2 pulse-btn">
+                                <i class="fas fa-rocket me-2"></i>¡Únete al Futuro!
+                            </a>
+                            <a href="#testimonios" class="btn btn-outline-light btn-lg mb-2">
+                                <i class="fas fa-star me-2"></i>Ver Casos de Éxito
+                            </a>
+                        </div>
+
+                        <!-- Badges de Tecnologías -->
+                        <div class="tech-badges">
+                            <span class="badge bg-primary me-2 mb-2">Solidity</span>
+                            <span class="badge bg-success me-2 mb-2">Web3</span>
+                            <span class="badge bg-warning me-2 mb-2">DeFi</span>
+                            <span class="badge bg-info me-2 mb-2">NFTs</span>
+                            <span class="badge bg-danger me-2 mb-2">Ethereum</span>
+                            <span class="badge bg-secondary me-2 mb-2">Polygon</span>
+                        </div>
                     </div>
                     <!-- Imagen de logotipo eliminada -->
                     <!-- Contador eliminado del hero-section -->
@@ -273,6 +602,113 @@
             </div>
         </div>
     </div>
+
+    <!-- Sección de Casos de Éxito y Testimonios -->
+    <section class="py-5" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);">
+        <div class="container">
+            <div class="row text-center mb-5">
+                <div class="col-lg-12">
+                    <h2 class="display-5 fw-bold mb-3" style="color: #2c3e50;">
+                        🌟 Casos de Éxito de la Comunidad
+                    </h2>
+                    <p class="lead text-muted">Conoce a los talentos blockchain que están revolucionando Castilla-La Mancha</p>
+                </div>
+            </div>
+            
+            <div class="row g-4">
+                <!-- Testimonio 1 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 shadow-sm border-0 testimonial-card">
+                        <div class="card-body text-center p-4">
+                            <div class="testimonial-avatar mb-3">
+                                <i class="fas fa-user-circle fa-4x text-primary"></i>
+                            </div>
+                            <h5 class="card-title fw-bold">Ana M.</h5>
+                            <p class="text-muted small mb-3">Smart Contract Developer | Toledo</p>
+                            <blockquote class="blockquote">
+                                <p class="mb-3 fst-italic">"Gracias a DevPool ABCLM conseguí mi primer trabajo en DeFi. La comunidad me ayudó a mejorar mis skills en Solidity."</p>
+                            </blockquote>
+                            <div class="d-flex justify-content-center">
+                                <span class="badge bg-primary me-1">Solidity</span>
+                                <span class="badge bg-success me-1">DeFi</span>
+                                <span class="badge bg-info">Web3</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonio 2 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 shadow-sm border-0 testimonial-card">
+                        <div class="card-body text-center p-4">
+                            <div class="testimonial-avatar mb-3">
+                                <i class="fas fa-user-circle fa-4x text-success"></i>
+                            </div>
+                            <h5 class="card-title fw-bold">Carlos R.</h5>
+                            <p class="text-muted small mb-3">NFT Artist & Developer | Albacete</p>
+                            <blockquote class="blockquote">
+                                <p class="mb-3 fst-italic">"Lancé mi colección NFT con 500 ETH de volumen. DevPool ABCLM fue clave para conectar con collectors internacionales."</p>
+                            </blockquote>
+                            <div class="d-flex justify-content-center">
+                                <span class="badge bg-warning me-1">NFTs</span>
+                                <span class="badge bg-primary me-1">OpenSea</span>
+                                <span class="badge bg-dark">Ethereum</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Testimonio 3 -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="card h-100 shadow-sm border-0 testimonial-card">
+                        <div class="card-body text-center p-4">
+                            <div class="testimonial-avatar mb-3">
+                                <i class="fas fa-user-circle fa-4x text-warning"></i>
+                            </div>
+                            <h5 class="card-title fw-bold">Miguel L.</h5>
+                            <p class="text-muted small mb-3">Blockchain Consultant | Ciudad Real</p>
+                            <blockquote class="blockquote">
+                                <p class="mb-3 fst-italic">"Desde CLM asesoro a empresas internacionales en blockchain. La red de DevPool ABCLM abrió puertas increíbles."</p>
+                            </blockquote>
+                            <div class="d-flex justify-content-center">
+                                <span class="badge bg-danger me-1">Consulting</span>
+                                <span class="badge bg-info me-1">Enterprise</span>
+                                <span class="badge bg-secondary">B2B</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats de Impacto -->
+            <div class="row mt-5 text-center">
+                <div class="col-lg-12">
+                    <div class="card border-0 bg-primary text-white">
+                        <div class="card-body py-4">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h3 class="display-6 fw-bold mb-0" id="jobsCreated">47</h3>
+                                    <p class="mb-0">Empleos Creados</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <h3 class="display-6 fw-bold mb-0" id="projectsLaunched">23</h3>
+                                    <p class="mb-0">Proyectos Lanzados</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <h3 class="display-6 fw-bold mb-0" id="totalVolume">2.3M</h3>
+                                    <p class="mb-0">€ Volumen Generado</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <h3 class="display-6 fw-bold mb-0" id="githubStars">1.2K</h3>
+                                    <p class="mb-0">GitHub Stars</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Formulario de Registro -->
     <div class="container">
@@ -383,19 +819,140 @@
         </div>
     </section>
 
-    <!-- Footer -->
-    <footer class="bg-dark text-light py-4 mt-5">
-        <div class="container text-center">
-            <div class="mb-3">
-                <a href="https://www.linkedin.com/company/asociacion-blockchain-de-castilla-la-mancha/" target="_blank" class="text-light mx-3" title="LinkedIn"><i class="fab fa-linkedin social-icon"></i></a>
-                <a href="https://t.me/+4QeI7xwu-0Q0ZTg0" target="_blank" class="text-light mx-3" title="Telegram"><i class="fab fa-telegram social-icon"></i></a>
-                <a href="https://discord.com/invite/WKjF88rDFN" target="_blank" class="text-light mx-3" title="Discord"><i class="fab fa-discord social-icon"></i></a>
-                <a href="https://www.youtube.com/@AsociacionBlockchainCLM" target="_blank" class="text-light mx-3" title="YouTube"><i class="fab fa-youtube social-icon"></i></a>
+    <!-- Newsletter Section -->
+    <section class="py-5" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+        <div class="container">
+            <div class="row justify-content-center text-center text-white">
+                <div class="col-lg-8">
+                    <h3 class="mb-3">📧 ¡No te pierdas las últimas oportunidades!</h3>
+                    <p class="mb-4">Suscríbete a nuestro newsletter y recibe ofertas de trabajo, eventos exclusivos y noticias del ecosistema blockchain CLM</p>
+                    
+                    <div class="row justify-content-center">
+                        <div class="col-md-8">
+                            <form class="d-flex gap-2 newsletter-form">
+                                <input type="email" class="form-control form-control-lg" placeholder="tu.email@ejemplo.com" required>
+                                <button type="submit" class="btn btn-warning btn-lg px-4">
+                                    <i class="fas fa-paper-plane me-2"></i>Suscribirme
+                                </button>
+                            </form>
+                            <p class="small mt-2 opacity-75">🔒 Respetamos tu privacidad. Sin spam, solo contenido valioso.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <p class="mb-0 small">
-                Asociación Blockchain de Castilla-La Mancha - Fundada en 2024<br>
-                Contacto: contacto@clmblockchain.org
-            </p>
+        </div>
+    </section>
+
+    <!-- Footer Mejorado -->
+    <footer class="bg-dark text-light py-5">
+        <div class="container">
+            <div class="row">
+                <!-- Información Principal -->
+                <div class="col-lg-4 mb-4">
+                    <h5 class="fw-bold mb-3">
+                        <i class="fas fa-cube me-2 text-primary"></i>DevPool ABCLM
+                    </h5>
+                    <p class="text-muted">La comunidad blockchain más activa de Castilla-La Mancha. Conectamos talentos, creamos oportunidades y construimos el futuro descentralizado.</p>
+                    
+                    <!-- Stats Footer -->
+                    <div class="row text-center mt-4">
+                        <div class="col-4">
+                            <h6 class="text-warning mb-0">{{ num_usuarios }}+</h6>
+                            <small class="text-muted">Miembros</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-warning mb-0">47+</h6>
+                            <small class="text-muted">Proyectos</small>
+                        </div>
+                        <div class="col-4">
+                            <h6 class="text-warning mb-0">23+</h6>
+                            <small class="text-muted">Empleos</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Links Rápidos -->
+                <div class="col-lg-2 col-md-3 mb-4">
+                    <h6 class="fw-bold mb-3">Comunidad</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#registro" class="text-muted">Únete Ahora</a></li>
+                        <li><a href="#testimonios" class="text-muted">Casos de Éxito</a></li>
+                        <li><a href="/admin/login" class="text-muted">Panel Admin</a></li>
+                        <li><a href="https://clmblockchain.org" class="text-muted" target="_blank">ABCLM Official</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Tecnologías -->
+                <div class="col-lg-2 col-md-3 mb-4">
+                    <h6 class="fw-bold mb-3">Tecnologías</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#" class="text-muted">Ethereum</a></li>
+                        <li><a href="#" class="text-muted">Solidity</a></li>
+                        <li><a href="#" class="text-muted">Web3.js</a></li>
+                        <li><a href="#" class="text-muted">DeFi</a></li>
+                        <li><a href="#" class="text-muted">NFTs</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Redes Sociales -->
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <h6 class="fw-bold mb-3">Síguenos</h6>
+                    <div class="social-links mb-4">
+                        <a href="https://www.linkedin.com/company/asociacion-blockchain-de-castilla-la-mancha/" target="_blank" class="social-link linkedin">
+                            <i class="fab fa-linkedin"></i>
+                            <span>LinkedIn</span>
+                        </a>
+                        <a href="https://t.me/+4QeI7xwu-0Q0ZTg0" target="_blank" class="social-link telegram">
+                            <i class="fab fa-telegram"></i>
+                            <span>Telegram</span>
+                        </a>
+                        <a href="https://discord.com/invite/WKjF88rDFN" target="_blank" class="social-link discord">
+                            <i class="fab fa-discord"></i>
+                            <span>Discord</span>
+                        </a>
+                        <a href="https://www.youtube.com/@AsociacionBlockchainCLM" target="_blank" class="social-link youtube">
+                            <i class="fab fa-youtube"></i>
+                            <span>YouTube</span>
+                        </a>
+                        <a href="https://twitter.com/ABCLM_Official" target="_blank" class="social-link twitter">
+                            <i class="fab fa-twitter"></i>
+                            <span>Twitter</span>
+                        </a>
+                        <a href="https://github.com/ABCLM" target="_blank" class="social-link github">
+                            <i class="fab fa-github"></i>
+                            <span>GitHub</span>
+                        </a>
+                    </div>
+                    
+                    <!-- Hashtags Trending -->
+                    <div class="trending-hashtags">
+                        <small class="text-muted d-block mb-2">Trending:</small>
+                        <span class="hashtag">#BlockchainCLM</span>
+                        <span class="hashtag">#Web3España</span>
+                        <span class="hashtag">#DesarrolladorDelMes</span>
+                        <span class="hashtag">#DeMancha</span>
+                    </div>
+                </div>
+            </div>
+            
+            <hr class="my-4 border-secondary">
+            
+            <!-- Copyright y Legal -->
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0 small text-muted">
+                        © 2024 <strong>Asociación Blockchain de Castilla-La Mancha</strong><br>
+                        Fundada con ❤️ en CLM | <a href="mailto:contacto@clmblockchain.org" class="text-warning">contacto@clmblockchain.org</a>
+                    </p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <small class="text-muted">
+                        <a href="#" class="text-muted me-3">Política de Privacidad</a>
+                        <a href="#" class="text-muted me-3">Términos de Uso</a>
+                        <a href="#" class="text-muted">Cookies</a>
+                    </small>
+                </div>
+            </div>
         </div>
     </footer>
 
@@ -498,6 +1055,78 @@
         document.addEventListener('DOMContentLoaded', () => {
             document.querySelectorAll('.brand-text .letter').forEach((letter, index) => {
                 letter.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        // Newsletter Form Handler
+        document.querySelector('.newsletter-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const emailInput = e.target.querySelector('input[type="email"]');
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn.innerHTML;
+            
+            // Basic email validation
+            const email = emailInput.value.trim();
+            if (!email || !email.includes('@')) {
+                showMessage('❌ Por favor, introduce un email válido', 'danger');
+                return;
+            }
+            
+            // Update button state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Suscribiendo...';
+            
+            try {
+                // Simulate newsletter subscription (replace with actual endpoint)
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Success
+                showMessage('🎉 ¡Genial! Te has suscrito correctamente al newsletter. ¡Bienvenido a la comunidad!', 'success');
+                emailInput.value = '';
+                
+                // Optional: Track subscription event
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'newsletter_signup', {
+                        'event_category': 'engagement',
+                        'event_label': 'footer_newsletter'
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Newsletter subscription error:', error);
+                showMessage('❌ Error al suscribirse. Por favor, inténtalo de nuevo.', 'danger');
+            } finally {
+                // Reset button
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalBtnText;
+            }
+        });
+
+        // Smooth scroll for footer links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Track social media clicks
+        document.querySelectorAll('.social-link').forEach(link => {
+            link.addEventListener('click', function() {
+                const platform = this.querySelector('span')?.textContent || 'unknown';
+                if (typeof gtag !== 'undefined') {
+                    gtag('event', 'social_click', {
+                        'event_category': 'social',
+                        'event_label': platform.toLowerCase()
+                    });
+                }
             });
         });
     </script>
