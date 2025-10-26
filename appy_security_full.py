@@ -9,9 +9,9 @@ import time
 from collections import defaultdict
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
-# from flask_limiter import Limiter  # Se habilitará en producción
-# from flask_limiter.util import get_remote_address  # Se habilitará en producción  
-# from flask_wtf.csrf import CSRFProtect  # Se habilitará en producción
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
 from supabase import create_client, Client
 import smtplib
@@ -30,27 +30,21 @@ app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
 
 # Configuración de cookies seguras
 app.config.update(
-    # SESSION_COOKIE_SECURE=True,  # Se habilitará en producción HTTPS
+    SESSION_COOKIE_SECURE=True,  # Solo HTTPS en producción
     SESSION_COOKIE_HTTPONLY=True,  # No accesible via JavaScript
     SESSION_COOKIE_SAMESITE='Lax',  # Protección CSRF
     PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),  # Auto-logout 30 min
-    # WTF_CSRF_TIME_LIMIT=None,  # Se habilitará en producción
+    WTF_CSRF_TIME_LIMIT=None,  # CSRF token sin límite de tiempo
 )
 
 # Inicializar protecciones de seguridad
-# csrf = CSRFProtect(app)  # Se habilitará en producción
-# limiter = Limiter(  # Se habilitará en producción
-#     app=app,
-#     key_func=get_remote_address,
-#     default_limits=["200 per day", "50 per hour"],
-#     storage_uri="memory://"
-# )
-
-def get_remote_address():
-    """Obtener IP del cliente"""
-    return request.environ.get('HTTP_X_FORWARDED_FOR') or request.environ.get('REMOTE_ADDR') or '127.0.0.1'
-
-print("🔧 Modo híbrido: Seguridad básica local + completa en producción")
+csrf = CSRFProtect(app)
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
 
 # 📊 Sistema de monitoreo de intentos fallidos
 failed_attempts = defaultdict(list)
@@ -360,19 +354,19 @@ def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Verificar si la sesión existe y es válida
-        if not session.get('admin_logged'):
+        if not session.get('admin_logged') or not session.get('admin_token'):
             log_security_event("UNAUTHORIZED_ACCESS_ATTEMPT", f"Acceso no autorizado a {request.endpoint}")
             session.clear()
             return redirect(url_for('admin_login'))
         
-        # Verificar expiración de sesión (opcional en desarrollo)
-        # login_time = session.get('admin_login_time')
-        # if login_time:
-        #     login_datetime = datetime.fromisoformat(login_time)
-        #     if datetime.now() - login_datetime > timedelta(minutes=30):
-        #         log_security_event("SESSION_EXPIRED", f"Sesión expirada para admin")
-        #         session.clear()
-        #         return redirect(url_for('admin_login'))
+        # Verificar si la sesión ha expirado
+        login_time = session.get('admin_login_time')
+        if login_time:
+            login_datetime = datetime.fromisoformat(login_time)
+            if datetime.now() - login_datetime > timedelta(minutes=30):
+                log_security_event("SESSION_EXPIRED", f"Sesión expirada para admin")
+                session.clear()
+                return redirect(url_for('admin_login'))
         
         # Renovar timestamp de actividad
         session['admin_last_activity'] = datetime.now().isoformat()
@@ -488,7 +482,7 @@ def submit():
         return jsonify({'error': 'Error interno del servidor'}), 500
 
 @app.route('/admin/login', methods=['GET', 'POST'])
-# @limiter.limit("5 per 15 minutes")  # Se habilitará en producción
+@limiter.limit("5 per 15 minutes")  # Máximo 5 intentos por 15 minutos
 def admin_login():
     client_ip = get_remote_address()
     
@@ -584,7 +578,7 @@ def admin_logout():
 
 @app.route('/admin/delete/<string:dev_id>', methods=['POST'])
 @admin_required
-# @limiter.limit("10 per minute")  # Se habilitará en producción
+@limiter.limit("10 per minute")  # Límite en operaciones críticas
 def delete_developer(dev_id):
     """Eliminar desarrollador por ID"""
     try:
@@ -618,7 +612,7 @@ def delete_developer(dev_id):
 
 @app.route('/admin/export')
 @admin_required
-# @limiter.limit("5 per hour")  # Se habilitará en producción
+@limiter.limit("5 per hour")  # Límite para exportaciones
 def export_developers():
     try:
         response = developers_table.select('*').order('created_at', desc=True).execute()
