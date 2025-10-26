@@ -1,11 +1,17 @@
-from flask import Flask, request, jsonify, render_template, send_file, redirect, url_for
-from datetime import datetime
+from flask import Flask, request, jsonify, render_template, send_file, redirect, url_for, session
+from datetime import datetime, timedelta
 import re
 import json
 import os
 import uuid
+import secrets
+import time
+from collections import defaultdict
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+from flask_wtf.csrf import CSRFProtect
 from dotenv import load_dotenv
 from supabase import create_client, Client
 import smtplib
@@ -17,7 +23,104 @@ from email.mime.text import MIMEText
 load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'fallback_secret_key')
+
+# 🔐 CONFIGURACIÓN DE SEGURIDAD MEJORADA
+# Generar secret key robusta si no existe
+app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
+
+# Configuración de cookies seguras
+app.config.update(
+    SESSION_COOKIE_SECURE=True,  # Solo HTTPS en producción
+    SESSION_COOKIE_HTTPONLY=True,  # No accesible via JavaScript
+    SESSION_COOKIE_SAMESITE='Lax',  # Protección CSRF
+    PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),  # Auto-logout 30 min
+    WTF_CSRF_TIME_LIMIT=None,  # CSRF token sin límite de tiempo
+)
+
+# Inicializar protecciones de seguridad
+csrf = CSRFProtect(app)
+limiter = Limiter(
+    app=app,
+    key_func=get_remote_address,
+    default_limits=["200 per day", "50 per hour"],
+    storage_uri="memory://"
+)
+
+# 📊 Sistema de monitoreo de intentos fallidos
+failed_attempts = defaultdict(list)
+blocked_ips = defaultdict(float)
+
+def is_ip_blocked(ip):
+    """Verificar si una IP está bloqueada temporalmente"""
+    if ip in blocked_ips:
+        if time.time() < blocked_ips[ip]:
+            return True
+        else:
+            del blocked_ips[ip]
+    return False
+
+def record_failed_attempt(ip):
+    """Registrar intento fallido y bloquear si es necesario"""
+    current_time = time.time()
+    
+    # Limpiar intentos antiguos (más de 15 minutos)
+    failed_attempts[ip] = [
+        attempt_time for attempt_time in failed_attempts[ip]
+        if current_time - attempt_time < 900  # 15 minutos
+    ]
+    
+    # Añadir nuevo intento
+    failed_attempts[ip].append(current_time)
+    
+    # Bloquear si hay 5 o más intentos en 15 minutos
+    if len(failed_attempts[ip]) >= 5:
+        blocked_ips[ip] = current_time + 900  # Bloquear por 15 minutos
+        return True
+    
+    return False
+
+def log_security_event(event_type, details, ip=None):
+    """Registrar eventos de seguridad"""
+    timestamp = datetime.now().isoformat()
+    ip = ip or get_remote_address()
+    print(f"🚨 [SECURITY] {timestamp} - {event_type} - IP: {ip} - {details}")
+
+def send_security_alert(event_type, details, ip=None):
+    """Enviar alerta de seguridad por email"""
+    try:
+        admin_email = os.environ.get('ADMIN_EMAIL')
+        if not admin_email:
+            return
+            
+        alert_html = f'''
+        <div style="background: #fee; border: 1px solid #f66; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #d00;">🚨 Alerta de Seguridad - DevPool ABCLM</h2>
+            <p><strong>Evento:</strong> {event_type}</p>
+            <p><strong>IP:</strong> {ip or get_remote_address()}</p>
+            <p><strong>Timestamp:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p><strong>Detalles:</strong> {details}</p>
+        </div>
+        '''
+        
+        # Usar la función existente de envío de email
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f'🚨 Alerta de Seguridad - {event_type}'
+        msg['From'] = app.config['MAIL_USERNAME']
+        msg['To'] = admin_email
+        
+        html_part = MIMEText(alert_html, 'html', 'utf-8')
+        msg.attach(html_part)
+        
+        # Enviar usando configuración SMTP existente
+        context = ssl.create_default_context()
+        with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT']) as server:
+            if app.config.get('MAIL_USE_TLS'):
+                server.starttls(context=context)
+            server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+            server.send_message(msg)
+            
+    except Exception as e:
+        print(f"❌ Error enviando alerta de seguridad: {e}")
 
 # Configuración de correo DonDominio
 try:
@@ -250,8 +353,25 @@ def send_admin_notification(user_data: dict):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        if not request.cookies.get('admin_logged'):
+        # Verificar si la sesión existe y es válida
+        if not session.get('admin_logged') or not session.get('admin_token'):
+            log_security_event("UNAUTHORIZED_ACCESS_ATTEMPT", f"Acceso no autorizado a {request.endpoint}")
+            session.clear()
             return redirect(url_for('admin_login'))
+        
+        # Verificar si la sesión ha expirado
+        login_time = session.get('admin_login_time')
+        if login_time:
+            login_datetime = datetime.fromisoformat(login_time)
+            if datetime.now() - login_datetime > timedelta(minutes=30):
+                log_security_event("SESSION_EXPIRED", f"Sesión expirada para admin")
+                session.clear()
+                return redirect(url_for('admin_login'))
+        
+        # Renovar timestamp de actividad
+        session['admin_last_activity'] = datetime.now().isoformat()
+        session.permanent = True
+        
         return f(*args, **kwargs)
     return decorated_function
 
@@ -362,34 +482,75 @@ def submit():
         return jsonify({'error': 'Error interno del servidor'}), 500
 
 @app.route('/admin/login', methods=['GET', 'POST'])
+@limiter.limit("5 per 15 minutes")  # Máximo 5 intentos por 15 minutos
 def admin_login():
+    client_ip = get_remote_address()
+    
+    # Verificar si la IP está bloqueada
+    if is_ip_blocked(client_ip):
+        log_security_event("BLOCKED_IP_ACCESS", f"Acceso bloqueado por múltiples intentos fallidos", client_ip)
+        return render_template('admin_login.html', 
+                             error='IP bloqueada temporalmente por múltiples intentos fallidos. Intente en 15 minutos.'), 429
+    
     if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '')
         
         if not username or not password:
+            log_security_event("LOGIN_MISSING_CREDENTIALS", f"Intento de login sin credenciales", client_ip)
             return render_template('admin_login.html', error='Usuario y contraseña requeridos')
         
         try:
             # Buscar admin en Supabase
             response = admin_table.select('hashed_password').eq('username', username).execute()
-            print(f"Respuesta Supabase: {response}")
             
             if response.data:
-                print(f"Datos: {response.data}")
                 stored_hash = response.data[0]['hashed_password']
                 
                 if check_password_hash(stored_hash, password):
-                    # Login exitoso
-                    resp = redirect(url_for('admin_dashboard'))
-                    resp.set_cookie('admin_logged', 'true', max_age=3600)  # 1 hora
-                    return resp
+                    # Login exitoso - limpiar intentos fallidos
+                    if client_ip in failed_attempts:
+                        del failed_attempts[client_ip]
+                    
+                    # Crear sesión segura
+                    session.permanent = True
+                    session['admin_logged'] = True
+                    session['admin_token'] = secrets.token_hex(32)
+                    session['admin_login_time'] = datetime.now().isoformat()
+                    session['admin_last_activity'] = datetime.now().isoformat()
+                    session['admin_username'] = username
+                    
+                    log_security_event("SUCCESSFUL_LOGIN", f"Login exitoso para usuario: {username}", client_ip)
+                    
+                    # Enviar alerta de login admin
+                    send_security_alert("Login Admin", f"Usuario {username} ha iniciado sesión", client_ip)
+                    
+                    return redirect(url_for('admin_dashboard'))
                 else:
+                    # Contraseña incorrecta
+                    blocked = record_failed_attempt(client_ip)
+                    log_security_event("FAILED_LOGIN", f"Contraseña incorrecta para usuario: {username}", client_ip)
+                    
+                    if blocked:
+                        send_security_alert("IP Bloqueada", f"IP bloqueada por múltiples intentos fallidos", client_ip)
+                        return render_template('admin_login.html', 
+                                             error='Demasiados intentos fallidos. IP bloqueada por 15 minutos.'), 429
+                    
                     return render_template('admin_login.html', error='Credenciales inválidas')
             else:
-                return render_template('admin_login.html', error='Usuario no encontrado')
+                # Usuario no encontrado
+                blocked = record_failed_attempt(client_ip)
+                log_security_event("FAILED_LOGIN", f"Usuario no encontrado: {username}", client_ip)
+                
+                if blocked:
+                    send_security_alert("IP Bloqueada", f"IP bloqueada por múltiples intentos fallidos", client_ip)
+                    return render_template('admin_login.html', 
+                                         error='Demasiados intentos fallidos. IP bloqueada por 15 minutos.'), 429
+                
+                return render_template('admin_login.html', error='Credenciales inválidas')
                 
         except Exception as e:
+            log_security_event("LOGIN_ERROR", f"Error del servidor en login: {str(e)}", client_ip)
             print(f"Error en login: {e}")
             return render_template('admin_login.html', error='Error del servidor')
     
@@ -410,33 +571,48 @@ def admin_dashboard():
 
 @app.route('/admin/logout')
 def admin_logout():
-    resp = redirect(url_for('admin_login'))
-    resp.set_cookie('admin_logged', '', expires=0)
-    return resp
+    username = session.get('admin_username', 'Unknown')
+    log_security_event("ADMIN_LOGOUT", f"Usuario {username} cerró sesión")
+    session.clear()
+    return redirect(url_for('admin_login'))
 
 @app.route('/admin/delete/<string:dev_id>', methods=['POST'])
 @admin_required
+@limiter.limit("10 per minute")  # Límite en operaciones críticas
 def delete_developer(dev_id):
     """Eliminar desarrollador por ID"""
     try:
         print(f"🗑️ Intentando eliminar desarrollador con ID: {dev_id}")
         
-        # Eliminar por ID en Supabase
-        response = developers_table.delete().eq('id', dev_id).execute()
+        # Obtener información del desarrollador antes de eliminar
+        info_response = developers_table.select('name, email').eq('id', dev_id).execute()
         
-        if response.data:
-            print(f"✅ Desarrollador {dev_id} eliminado exitosamente")
-            return redirect(url_for('admin_dashboard'))
+        if info_response.data:
+            dev_info = info_response.data[0]
+            
+            # Eliminar por ID en Supabase
+            response = developers_table.delete().eq('id', dev_id).execute()
+            
+            if response.data:
+                print(f"✅ Desarrollador {dev_id} eliminado exitosamente")
+                log_security_event("DEVELOPER_DELETED", 
+                                 f"Admin {session.get('admin_username')} eliminó desarrollador: {dev_info['name']} ({dev_info['email']})")
+                return redirect(url_for('admin_dashboard'))
+            else:
+                print(f"❌ Error en eliminación de ID: {dev_id}")
+                return jsonify({'error': 'Error eliminando desarrollador'}), 500
         else:
             print(f"❌ No se encontró desarrollador con ID: {dev_id}")
             return jsonify({'error': 'Desarrollador no encontrado'}), 404
             
     except Exception as e:
         print(f"❌ Error eliminando desarrollador: {e}")
+        log_security_event("DELETE_ERROR", f"Error en eliminación: {str(e)}")
         return jsonify({'error': 'Error interno del servidor'}), 500
 
 @app.route('/admin/export')
 @admin_required
+@limiter.limit("5 per hour")  # Límite para exportaciones
 def export_developers():
     try:
         response = developers_table.select('*').order('created_at', desc=True).execute()
@@ -449,11 +625,15 @@ def export_developers():
         with open(filename, 'w', encoding='utf-8') as f:
             json.dump(developers, f, ensure_ascii=False, indent=2, default=str)
         
+        log_security_event("DATA_EXPORT", 
+                         f"Admin {session.get('admin_username')} exportó {len(developers)} registros")
+        
         return send_file(filename, as_attachment=True, download_name=filename)
         
     except Exception as e:
         print(f"Error en export: {e}")
-        return jsonify({'error': 'Error exportando datos'}), 500
+        log_security_event("EXPORT_ERROR", f"Error en exportación: {str(e)}")
+        return "Error en exportación", 500
 
 @app.route('/test-email-config')
 def test_email_config():
