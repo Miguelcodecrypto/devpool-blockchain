@@ -85,6 +85,8 @@
             position: relative;
             z-index: 2;
             animation: fadeInUp 1s ease-out;
+            max-width: 100%;
+            overflow: visible;
         }
 
         @keyframes fadeInUp {
@@ -99,12 +101,16 @@
         }
 
         .hero-title {
-            font-size: clamp(2.5rem, 6vw, 5rem);
+            font-size: clamp(1.8rem, 4vw, 3.8rem);
             font-weight: 300;
-            line-height: 1.1;
+            line-height: 1.3;
             margin-bottom: 2rem;
             letter-spacing: -0.02em;
             color: white;
+            max-width: 100%;
+            word-wrap: break-word;
+            width: 100%;
+            overflow: visible;
         }
 
         .gradient-text {
@@ -328,10 +334,90 @@
             cursor: not-allowed;
         }
 
+        /* ANIMACIONES PARA LOGO Y LETRAS */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-30px); }
+            60% { transform: translateY(-15px); }
+        }
+
+        @keyframes fall {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes glow {
+            0%, 100% { text-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+            50% { text-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(139, 92, 246, 0.5); }
+        }
+
+        .logo-interactive {
+            animation: bounce 2s ease-in-out infinite;
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
+            transition: all 0.3s ease;
+        }
+
+        .logo-interactive:hover {
+            transform: scale(1.1) rotate(5deg);
+            filter: drop-shadow(0 0 20px rgba(59, 130, 246, 0.6));
+        }
+
+        .brand-text {
+            display: inline-block;
+        }
+
+        .letter {
+            display: inline-block;
+            animation: fall 0.6s ease-out forwards;
+            opacity: 0;
+            transform: translateY(-50px);
+            transition: all 0.3s ease;
+        }
+
+        .letter:hover {
+            animation: glow 1s ease-in-out infinite;
+            transform: scale(1.2) translateY(-10px);
+            color: #3b82f6;
+        }
+
+        .hero-title-interactive {
+            cursor: default;
+        }
+
+        .hero-title-interactive .letter {
+            cursor: pointer;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .logo-interactive {
+                animation: none;
+            }
+            .letter {
+                animation: none;
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .hero-title {
+                font-size: clamp(1.6rem, 3.5vw, 3rem);
+                line-height: 1.35;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .hero-title {
+                font-size: clamp(1.4rem, 3vw, 2.5rem);
+                line-height: 1.4;
+            }
+        }
+
         @media (max-width: 768px) {
             .hero-title {
-                font-size: clamp(2rem, 8vw, 3.5rem);
+                font-size: clamp(1.2rem, 4vw, 2rem);
+                line-height: 1.4;
             }
             
             .hero-subtitle {
@@ -355,6 +441,18 @@
             .form-container {
                 padding: 2rem;
             }
+            
+            .logo-interactive {
+                width: 30px;
+                height: 30px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero-title {
+                font-size: clamp(1rem, 5vw, 1.8rem);
+                line-height: 1.5;
+            }
         }
     </style>
 </head>
@@ -363,7 +461,13 @@
     <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
         <div class="container">
             <a class="navbar-brand" href="/">
-                <span>DEVPOOL ABCLM</span>
+                <div style="display: flex; align-items: center;">
+                    <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" height="40" class="me-2 logo-interactive">
+                    <span class="brand-text">
+                        <span class="letter">D</span><span class="letter">E</span><span class="letter">V</span><span class="letter">P</span><span class="letter">O</span><span class="letter">O</span><span class="letter">L</span> 
+                        <span class="letter">A</span><span class="letter">B</span><span class="letter">C</span><span class="letter">L</span><span class="letter">M</span>
+                    </span>
+                </div>
             </a>
             <div>
                 <a href="/admin/login" class="btn btn-outline-light btn-sm">
@@ -377,12 +481,12 @@
     <div class="hero-section">
         <div class="container">
             <div class="row align-items-center min-vh-100">
-                <div class="col-lg-6">
+                <div class="col-lg-8 col-xl-7">
                     <div class="hero-content">
-                        <h1 class="hero-title">
-                            Comunidad<br>
-                            <span class="gradient-text">Blockchain</span><br>
-                            Castilla-La Mancha
+                        <h1 class="hero-title hero-title-interactive">
+                            <span class="letter">Ú</span><span class="letter">n</span><span class="letter">e</span><span class="letter">t</span><span class="letter">e</span> <span class="letter">a</span><span class="letter">l</span> <span class="letter">c</span><span class="letter">a</span><span class="letter">m</span><span class="letter">b</span><span class="letter">i</span><span class="letter">o</span><br>
+                            <span class="letter">ú</span><span class="letter">n</span><span class="letter">e</span><span class="letter">t</span><span class="letter">e</span> <span class="letter">a</span> <span class="letter">l</span><span class="letter">a</span> <span class="letter">c</span><span class="letter">o</span><span class="letter">m</span><span class="letter">u</span><span class="letter">n</span><span class="letter">i</span><span class="letter">d</span><span class="letter">a</span><span class="letter">d</span><br>
+                            <span class="gradient-text">Web3</span>
                         </h1>
                         <p class="hero-subtitle">
                             El epicentro de innovación blockchain en CLM. 
@@ -513,6 +617,54 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // Animaciones de letras mejoradas
+        document.addEventListener('DOMContentLoaded', () => {
+            // Animar letras del navbar
+            document.querySelectorAll('.brand-text .letter').forEach((letter, index) => {
+                letter.style.animationDelay = `${index * 0.08}s`;
+                letter.style.animationDuration = '0.6s';
+                
+                // Efecto hover individual
+                letter.addEventListener('mouseenter', () => {
+                    letter.style.color = '#3b82f6';
+                    letter.style.transform = 'scale(1.3) translateY(-5px)';
+                });
+                
+                letter.addEventListener('mouseleave', () => {
+                    letter.style.color = '';
+                    letter.style.transform = '';
+                });
+            });
+            
+            // Animar letras del título principal
+            document.querySelectorAll('.hero-title-interactive .letter').forEach((letter, index) => {
+                letter.style.animationDelay = `${(index * 0.05) + 0.5}s`;
+                letter.style.animationDuration = '0.8s';
+                
+                // Efecto hover mejorado para el título
+                letter.addEventListener('mouseenter', () => {
+                    letter.style.textShadow = '0 0 20px rgba(59, 130, 246, 0.8)';
+                    letter.style.transform = 'scale(1.2) translateY(-10px) rotate(5deg)';
+                });
+                
+                letter.addEventListener('mouseleave', () => {
+                    letter.style.textShadow = '';
+                    letter.style.transform = '';
+                });
+            });
+            
+            // Efecto especial para el logo
+            const logo = document.querySelector('.logo-interactive');
+            if (logo) {
+                logo.addEventListener('click', () => {
+                    logo.style.animation = 'bounce 0.6s ease-in-out';
+                    setTimeout(() => {
+                        logo.style.animation = 'bounce 2s ease-in-out infinite';
+                    }, 600);
+                });
+            }
+        });
+
         // Smooth scroll para enlaces internos
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
@@ -569,6 +721,16 @@
                 if (response.ok) {
                     alert('✨ ¡Bienvenido a la élite blockchain de CLM!');
                     e.target.reset();
+                    
+                    // Efecto especial de celebración en las letras
+                    document.querySelectorAll('.letter').forEach((letter, index) => {
+                        setTimeout(() => {
+                            letter.style.animation = 'glow 0.5s ease-in-out';
+                            setTimeout(() => {
+                                letter.style.animation = '';
+                            }, 500);
+                        }, index * 50);
+                    });
                 } else {
                     const errorData = await response.text();
                     throw new Error(`Error ${response.status}: ${errorData}`);
@@ -585,7 +747,7 @@
         // Animaciones al cargar la página
         window.addEventListener('load', () => {
             // Las animaciones CSS se activan automáticamente
-            console.log('Página cargada correctamente');
+            console.log('🎨 Página ultra-moderna con logotipo interactivo cargada correctamente');
         });
     </script>
 </body>
