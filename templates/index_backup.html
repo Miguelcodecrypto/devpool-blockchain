@@ -1,0 +1,2110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Optimization -->
+    <title>DevPool ABCLM - Desarrolladores Blockchain Castilla-La Mancha | Web3 CLM</title>
+    <meta name="description" content="La mayor comunidad de desarrolladores blockchain de Castilla-La Mancha. Conecta con talentos Web3, DeFi y NFT. Únete al futuro digital de CLM.">
+    <meta name="keywords" content="blockchain castilla la mancha, desarrolladores web3 clm, programadores crypto toledo, talento blockchain albacete, startup blockchain cuenca, desarrolladores solidity guadalajara, nft creators castilla">
+    <meta name="author" content="Asociación Blockchain de Castilla-La Mancha">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://devpool-blockchain.onrender.com">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://devpool-blockchain.onrender.com">
+    <meta property="og:title" content="DevPool ABCLM - Conectando Talentos Blockchain de Castilla-La Mancha">
+    <meta property="og:description" content="🚀 Únete a la mayor comunidad de desarrolladores blockchain de CLM. Descubre talento Web3, proyectos DeFi y oportunidades NFT en Castilla-La Mancha.">
+    <meta property="og:image" content="https://devpool-blockchain.onrender.com/static/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:locale" content="es_ES">
+    <meta property="og:site_name" content="DevPool ABCLM">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://devpool-blockchain.onrender.com">
+    <meta name="twitter:title" content="DevPool ABCLM - Talentos Blockchain CLM">
+    <meta name="twitter:description" content="🌟 La comunidad blockchain más activa de Castilla-La Mancha. Desarrolladores Web3, proyectos DeFi y innovación NFT. #BlockchainCLM">
+    <meta name="twitter:image" content="https://devpool-blockchain.onrender.com/static/twitter-card.jpg">
+    <meta name="twitter:creator" content="@ABCLM_Official">
+    <meta name="twitter:site" content="@DevPoolCLM">
+    
+    <!-- Schema.org structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "DevPool ABCLM",
+      "alternateName": "Asociación Blockchain de Castilla-La Mancha",
+      "url": "https://devpool-blockchain.onrender.com",
+      "logo": "https://devpool-blockchain.onrender.com/static/logo.png",
+      "description": "Comunidad de desarrolladores blockchain de Castilla-La Mancha",
+      "areaServed": {
+        "@type": "Place",
+        "name": "Castilla-La Mancha, España"
+      },
+      "memberOf": {
+        "@type": "Organization",
+        "name": "Ecosistema Blockchain Español"
+      }
+    }
+    </script>
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+    <style>
+        /* RESET COMPLETO Y LIMPIO */
+        * {
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+            background: #0a0a0a !important;
+            color: white !important;
+            line-height: 1.6 !important;
+            overflow-x: hidden !important;
+        }
+
+        /* NAVBAR LIMPIO */
+        .navbar {
+            background: rgba(0, 0, 0, 0.9) !important;
+            backdrop-filter: blur(10px) !important;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .navbar-brand {
+            color: white !important;
+            font-weight: 600 !important;
+            font-size: 1.5rem !important;
+        }
+
+        .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.8) !important;
+            font-weight: 500 !important;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: #3b82f6 !important;
+        }
+
+        /* HERO SECTION LIMPIO */
+        .hero-section {
+            min-height: 100vh !important;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%) !important;
+            position: relative !important;
+            display: flex !important;
+            align-items: center !important;
+            overflow: hidden !important;
+            padding: 0 !important;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 75% 75%, rgba(139, 92, 246, 0.08) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative !important;
+            z-index: 2 !important;
+        }
+
+        .hero-content {
+            position: relative !important;
+            z-index: 2 !important;
+            padding: 2rem 0 !important;
+        }
+
+        /* TÍTULO PRINCIPAL ÚNICO */
+        .hero-title {
+            font-size: clamp(2.5rem, 6vw, 5rem) !important;
+            font-weight: 300 !important;
+            line-height: 1.1 !important;
+            margin-bottom: 2rem !important;
+            letter-spacing: -0.02em !important;
+            color: white !important;
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4) !important;
+            -webkit-background-clip: text !important;
+            -webkit-text-fill-color: transparent !important;
+            background-clip: text !important;
+            font-weight: 500 !important;
+            display: inline-block !important;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem !important;
+            color: rgba(255, 255, 255, 0.7) !important;
+            margin-bottom: 3rem !important;
+            max-width: 500px !important;
+            line-height: 1.6 !important;
+            font-weight: 300 !important;
+        }
+
+        .cta-button {
+            display: inline-flex !important;
+            align-items: center !important;
+            padding: 16px 32px !important;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6) !important;
+            color: white !important;
+            text-decoration: none !important;
+            border-radius: 50px !important;
+            font-weight: 500 !important;
+            font-size: 1.1rem !important;
+            transition: all 0.3s ease !important;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3) !important;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px) !important;
+            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4) !important;
+            color: white !important;
+            text-decoration: none !important;
+        }
+
+        /* ELEMENTOS FLOTANTES */
+        .floating-element {
+            position: absolute;
+            z-index: 1;
+            opacity: 0.1;
+        }
+
+        .floating-circle {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            top: 10%;
+            right: 10%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-square {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            bottom: 20%;
+            right: 30%;
+            animation: float 4s ease-in-out infinite reverse;
+            border-radius: 20px;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            z-index: 2;
+        }
+
+        .scroll-arrow {
+            width: 2px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.3);
+            margin: 10px auto;
+            position: relative;
+        }
+
+        .scroll-arrow::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid rgba(255, 255, 255, 0.5);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+            transform: translateX(-50%) rotate(45deg);
+        }
+
+        /* ANIMATION ENTRANCE */
+        .animate-in {
+            opacity: 0;
+            transform: translateY(20px);
+            animation: slideUp 0.8s ease-out forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* RESPONSIVE OPTIMIZATIONS */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: clamp(2rem, 8vw, 3.5rem) !important;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem !important;
+                margin-bottom: 2rem !important;
+            }
+            
+            .cta-button {
+                padding: 14px 28px !important;
+                font-size: 1rem !important;
+            }
+        }
+    </style>
+            display: inline-block;
+            max-width: 90vw;
+        }
+        /* Mejoras para móviles */
+        @media (max-width: 576px) {
+            .hero-section {
+                padding: 3rem 0 2rem 0;
+                font-size: 1rem;
+            }
+            /* Asegurar que placeholder se vea completo en móviles */
+            input[name="portfolio_url"]::placeholder {
+                font-size: 0.85rem;
+                white-space: nowrap;
+                overflow: visible;
+            }
+            /* Placeholder del campo habilidades más legible en móviles */
+            input[name="skills"]::placeholder {
+                font-size: 0.75rem;
+                line-height: 1.2;
+                white-space: normal;
+                word-wrap: break-word;
+            }
+        }
+
+
+
+
+
+        .gradient-text {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6, #06b6d4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 500;
+            display: inline-block;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-bottom: 3rem;
+            max-width: 500px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 16px 32px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 32px rgba(59, 130, 246, 0.3);
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.4);
+            color: white;
+            text-decoration: none;
+        }
+
+        .floating-element {
+            position: absolute;
+            z-index: 1;
+            opacity: 0.1;
+        }
+
+        .floating-circle {
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            top: 10%;
+            right: 10%;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .floating-square {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(135deg, #06b6d4, #3b82f6);
+            bottom: 20%;
+            right: 30%;
+            animation: float 4s ease-in-out infinite reverse;
+            border-radius: 20px;
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            color: rgba(255, 255, 255, 0.5);
+            z-index: 2;
+        }
+
+        .scroll-arrow {
+            width: 2px;
+            height: 30px;
+            background: rgba(255, 255, 255, 0.3);
+            margin: 10px auto;
+            position: relative;
+        }
+
+        .scroll-arrow::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 8px;
+            height: 8px;
+            border-right: 2px solid rgba(255, 255, 255, 0.5);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.5);
+            transform: translateX(-50%) rotate(45deg);
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 7rem);
+            font-weight: 700;
+            line-height: 0.9;
+            margin-bottom: 2rem;
+            letter-spacing: -0.04em;
+        }
+
+        .gradient-text {
+            background: var(--gradient-primary);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            position: relative;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--text-secondary);
+            max-width: 600px;
+            margin-bottom: 3rem;
+            line-height: 1.4;
+        }
+
+        .cta-button {
+            display: inline-flex;
+            align-items: center;
+            padding: 1.25rem 2.5rem;
+            background: var(--gradient-primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cta-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .cta-button:hover::before {
+            left: 100%;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(255, 107, 53, 0.3);
+        }
+
+        /* Floating Elements */
+        .floating-element {
+            position: absolute;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .floating-circle {
+            width: 300px;
+            height: 300px;
+            border: 1px solid rgba(255, 107, 53, 0.2);
+            border-radius: 50%;
+            top: 20%;
+            right: 10%;
+            animation: float 8s ease-in-out infinite;
+        }
+
+        .floating-square {
+            width: 150px;
+            height: 150px;
+            background: linear-gradient(45deg, rgba(255, 107, 53, 0.1), rgba(247, 147, 30, 0.1));
+            transform: rotate(45deg);
+            bottom: 20%;
+            left: 15%;
+            animation: float 6s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(5deg); }
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: absolute;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-muted);
+        }
+
+        .scroll-arrow {
+            width: 2px;
+            height: 30px;
+            background: var(--gradient-primary);
+            margin-top: 0.5rem;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-10px); }
+            60% { transform: translateY(-5px); }
+        }
+
+        /* Navbar Ultra Modern */
+        .navbar {
+            background: rgba(10, 10, 11, 0.95) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: var(--text-primary) !important;
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--text-secondary) !important;
+            font-weight: 500;
+            margin: 0 1rem;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-nav .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient-primary);
+            transition: width 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover::after {
+            width: 100%;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--text-primary) !important;
+        }
+
+        /* Modern Sections */
+        .modern-section {
+            padding: 8rem 0;
+            position: relative;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 5rem;
+        }
+
+        .section-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.02em;
+        }
+
+        .section-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            max-width: 700px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Cards System */
+        .modern-card {
+            background: var(--surface-elevated);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modern-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: var(--gradient-primary);
+            transform: scaleX(0);
+            transition: transform 0.4s ease;
+        }
+
+        .modern-card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .modern-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--shadow-lg);
+            border-color: rgba(255, 107, 53, 0.3);
+        }
+
+        .card-icon {
+            width: 60px;
+            height: 60px;
+            background: var(--gradient-primary);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2rem;
+            font-size: 1.5rem;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        .card-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Form Styling */
+        .modern-form {
+            background: var(--surface-elevated);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-top: 3rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-muted);
+        }
+
+        /* Footer Modern */
+        .modern-footer {
+            background: var(--primary-light);
+            border-top: 1px solid var(--border);
+            padding: 4rem 0 2rem;
+        }
+
+        .footer-section {
+            margin-bottom: 2rem;
+        }
+
+        .footer-title {
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+        }
+
+        .footer-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-link:hover {
+            color: var(--accent);
+        }
+
+        .social-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            text-decoration: none;
+            margin-right: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .social-icon:hover {
+            background: var(--accent);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: clamp(2.5rem, 6vw, 4rem);
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .modern-section {
+                padding: 4rem 0;
+            }
+            
+            .modern-card {
+                padding: 2rem;
+            }
+            
+            .floating-circle,
+            .floating-square {
+                display: none;
+            }
+        }
+        
+        .stat-label {
+            color: #ffffff;
+            font-size: 0.9rem;
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        /* CTA Buttons */
+        .pulse-btn {
+            animation: pulse 2s infinite;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 5px 15px rgba(255, 193, 7, 0.4);
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 193, 7, 0.6);
+        }
+        
+        /* Tech Badges */
+        .tech-badges .badge {
+            font-size: 0.9rem;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        /* Testimonials Cards */
+        .testimonial-card {
+            transition: all 0.3s ease;
+            border-radius: 15px;
+            overflow: hidden;
+        }
+        
+        .testimonial-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1) !important;
+        }
+        
+        .testimonial-avatar {
+            transition: all 0.3s ease;
+        }
+        
+        .testimonial-card:hover .testimonial-avatar {
+            transform: scale(1.1);
+        }
+        
+        /* Smooth Scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Loading Animation for Stats */
+        .stat-number {
+            opacity: 0;
+            animation: countUp 1s ease-out forwards;
+        }
+        
+        @keyframes countUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Newsletter Styles */
+        .newsletter-form {
+            max-width: 100%;
+        }
+        
+        .newsletter-form .form-control:focus {
+            border-color: #ffc107;
+            box-shadow: 0 0 0 0.2rem rgba(255, 193, 7, 0.25);
+        }
+
+        /* Footer Styles */
+        .footer-links li {
+            margin-bottom: 8px;
+        }
+        
+        .footer-links a {
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+        
+        .footer-links a:hover {
+            color: #ffc107 !important;
+        }
+        
+        /* Social Links Enhanced */
+        .social-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .social-link {
+            display: flex;
+            align-items: center;
+            padding: 8px 15px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 25px;
+            text-decoration: none;
+            color: #fff !important;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .social-link:hover {
+            background: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+            color: #ffc107 !important;
+        }
+        
+        .social-link i {
+            margin-right: 8px;
+            font-size: 16px;
+        }
+        
+        .social-link.linkedin:hover { background: #0077b5; }
+        .social-link.telegram:hover { background: #0088cc; }
+        .social-link.discord:hover { background: #7289da; }
+        .social-link.youtube:hover { background: #ff0000; }
+        .social-link.twitter:hover { background: #1da1f2; }
+        .social-link.github:hover { background: #333; }
+        
+        /* Trending Hashtags */
+        .trending-hashtags {
+            margin-top: 15px;
+        }
+        
+        .hashtag {
+            display: inline-block;
+            background: rgba(255,193,7,0.2);
+            color: #ffc107;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin: 2px;
+            border: 1px solid rgba(255,193,7,0.3);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .social-links {
+                justify-content: center;
+            }
+            
+            .social-link span {
+                display: none;
+            }
+            
+            .social-link {
+                padding: 8px;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                justify-content: center;
+            }
+            
+            .social-link i {
+                margin: 0;
+            }
+            
+            .newsletter-form {
+                flex-direction: column;
+            }
+            
+            .newsletter-form .btn {
+                margin-top: 10px;
+            }
+        }
+        
+        /* Social Proof Animation */
+        .hero-stats {
+            animation: slideInUp 1s ease-out;
+        }
+        
+        @keyframes slideInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Mensaje en móviles */
+        @media (max-width: 576px) {
+            .message-container {
+                top: 20% !important;
+                z-index: 3000 !important;
+                max-width: 300px !important;
+            }
+            .alert-message {
+                font-size: 0.9rem;
+                padding: 0.8rem;
+            }
+        }
+        .navbar-brand .brand-text {
+                font-size: 1.1rem;
+            }
+            .card-header h3 {
+                font-size: 1.2rem;
+            }
+            .card-body {
+                padding: 1rem;
+            }
+            .form-label {
+                font-size: 1rem;
+            }
+            .form-control {
+                font-size: 1rem;
+                padding: 0.5rem;
+            }
+            .btn-lg {
+                font-size: 1rem;
+                padding: 0.75rem 1rem;
+            }
+            .container, .row, .col-lg-8 {
+                padding-left: 0;
+                padding-right: 0;
+            }
+            .card {
+                margin-bottom: 1rem;
+            }
+            .social-icon {
+                font-size: 1.2rem;
+            }
+            footer {
+                font-size: 0.9rem;
+                padding: 1rem 0;
+            }
+        .hero-section {
+            background: url("{{ url_for('static', filename='block-blockchain-business-chain.jpg') }}") center center / cover no-repeat !important;
+            color: #f3f3f3;
+            padding: 6rem 0 2rem 0;
+            margin-bottom: 2rem;
+            min-height: 50vh;
+            max-height: 60vh;
+            box-shadow: none;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            flex-direction: column;
+        }
+        
+        .feature-card {
+            transition: transform 0.3s;
+            border-left: 4px solid #6366f1;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .social-icon {
+            font-size: 1.5rem;
+            margin: 0 10px;
+            transition: all 0.3s;
+        }
+        
+        .social-icon:hover {
+            transform: scale(1.2);
+            color: #6366f1 !important;
+        }
+
+        .admin-link {
+            position: absolute;
+            right: 20px;
+            top: 15px;
+        }
+
+        /* Animaciones de mensajes */
+        @keyframes slideIn {
+            from { transform: translateX(100%); }
+            to { transform: translateX(0); }
+        }
+        
+        .message-container {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 2000;
+            max-width: 350px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .alert-message {
+            animation: slideIn 0.5s ease-out;
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: white;
+        }
+        
+        .alert-success {
+            background: rgba(16, 185, 129, 0.9) !important;
+            border: 2px solid #059669;
+        }
+        
+        .alert-error {
+            background: rgba(239, 68, 68, 0.9) !important;
+            border: 2px solid #dc2626;
+        }
+
+        /* Animaciones para logo y texto */
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-30px); }
+            60% { transform: translateY(-15px); }
+        }
+        @keyframes fall {
+            0% { transform: translateY(-50px); opacity: 0; }
+            100% { transform: translateY(0); opacity: 1; }
+        }
+        .logo {
+            animation: bounce 1s ease-in-out;
+        }
+        .letter {
+            display: inline-block;
+            animation: fall 0.5s ease-out forwards;
+            opacity: 0;
+            transform: translateY(-50px);
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .logo {
+                animation: none;
+            }
+            .letter {
+                animation: none;
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        /* Navbar Styles */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+            transition: all 0.3s ease;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color) !important;
+            font-size: 1.5rem;
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--text-primary) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .navbar-nav .nav-link:hover {
+            color: var(--primary-color) !important;
+        }
+
+        /* Secciones principales */
+        .main-section {
+            padding: 5rem 0;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            text-align: center;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto 3rem;
+        }
+
+        /* Tarjetas de contenido */
+        .content-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+
+        .content-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Formulario de registro mejorado */
+        .registration-form {
+            background: white;
+            border-radius: 20px;
+            padding: 3rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-control {
+            border-radius: 12px;
+            border: 2px solid var(--border-color);
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.1);
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Footer mejorado */
+        .footer {
+            background: var(--background-dark);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer h5 {
+            color: white;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .footer-link {
+            color: #cbd5e1;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-link:hover {
+            color: var(--accent-color);
+        }
+
+        /* Utilidades */
+        .text-gradient {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Modern Form Styles */
+        .glass-section {
+            padding: 120px 0;
+            background: linear-gradient(135deg, 
+                rgba(15, 23, 42, 0.95) 0%, 
+                rgba(30, 41, 59, 0.9) 50%, 
+                rgba(15, 23, 42, 0.95) 100%),
+                url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="1" fill="rgba(255,255,255,0.1)"/></svg>') repeat;
+            position: relative;
+        }
+
+        .modern-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 60px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modern-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
+        .card-header-modern {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .modern-title-sm {
+            font-size: 2.2rem;
+            font-weight: 300;
+            color: white;
+            margin-bottom: 10px;
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle-light {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 1.1rem;
+            font-weight: 300;
+        }
+
+        .modern-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px 30px;
+            margin-bottom: 50px;
+        }
+
+        .form-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .input-group-modern {
+            position: relative;
+        }
+
+        .modern-input, .modern-select {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 15px 0 10px;
+            font-size: 1rem;
+            color: white;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .modern-input:focus, .modern-select:focus {
+            border-bottom-color: #3b82f6;
+        }
+
+        .modern-input:focus + .modern-label,
+        .modern-input:not(:placeholder-shown) + .modern-label {
+            transform: translateY(-25px);
+            font-size: 0.85rem;
+            color: #3b82f6;
+        }
+
+        .modern-label {
+            position: absolute;
+            top: 15px;
+            left: 0;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 1rem;
+            font-weight: 300;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+
+        .input-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 2px;
+            width: 0;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: width 0.3s ease;
+        }
+
+        .modern-input:focus ~ .input-line {
+            width: 100%;
+        }
+
+        .helper-text {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.85rem;
+            margin-top: 8px;
+            display: block;
+        }
+
+        .modern-btn {
+            width: 100%;
+            background: transparent;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50px;
+            padding: 18px 40px;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modern-btn:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 20px 40px rgba(59, 130, 246, 0.15);
+        }
+
+        .btn-background {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: left 0.3s ease;
+            z-index: -1;
+        }
+
+        .modern-btn:hover .btn-background {
+            left: 0;
+        }
+
+        /* Footer Moderno */
+        .modern-footer {
+            background: #0a0a0a;
+            color: white;
+            padding: 80px 0 40px;
+            position: relative;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            gap: 60px;
+            margin-bottom: 60px;
+            align-items: center;
+        }
+
+        .footer-brand .brand-name {
+            font-size: 1.8rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        .footer-brand .brand-desc {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.95rem;
+            font-weight: 300;
+        }
+
+        .footer-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .footer-link {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-weight: 300;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .footer-link:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .social-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 120px;
+        }
+
+        .social-icon {
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.6);
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .social-icon:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+            color: #3b82f6;
+            transform: translateY(-5px);
+        }
+
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 40px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .copyright {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        .contact-link {
+            color: rgba(255, 255, 255, 0.6);
+            text-decoration: none;
+            font-weight: 300;
+            transition: color 0.3s ease;
+        }
+
+        .contact-link:hover {
+            color: #3b82f6;
+        }
+
+        /* Responsive Design Mejorado */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 100px 0 60px 0;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem !important;
+                line-height: 1.2;
+                margin-bottom: 1.5rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+                margin-bottom: 2rem;
+            }
+            
+            .cta-button {
+                padding: 14px 28px;
+                font-size: 1rem;
+            }
+            
+            .floating-element, .floating-elements {
+                display: none;
+            }
+            
+            .modern-card {
+                padding: 40px 30px;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                text-align: center;
+            }
+            
+            .footer-bottom {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .about-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .hero-section {
+                padding: 80px 0 40px 0;
+            }
+            
+            .hero-title {
+                font-size: 2rem !important;
+            }
+            
+            .hero-subtitle {
+                font-size: 1rem;
+            }
+            
+            .modern-card {
+                padding: 30px 20px;
+            }
+        }
+    </style>
+</head>
+<body style="background: transparent;">
+    <!-- Barra de navegación -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo" height="40" class="me-2 logo">
+                <span class="brand-text">
+                    <span class="letter">D</span><span class="letter">E</span><span class="letter">V</span><span class="letter">P</span><span class="letter">O</span><span class="letter">O</span><span class="letter">L</span> <span class="letter">A</span><span class="letter">B</span><span class="letter">C</span><span class="letter">L</span><span class="letter">M</span>
+                </span>
+            </a>
+            <div class="admin-link">
+                <a href="/admin/login" class="btn btn-outline-light btn-sm">
+                    <i class="fas fa-lock me-2"></i>Acceso Admin
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section Ultra Modern -->
+    <div class="hero-section">
+        <div class="container">
+            <div class="row align-items-center min-vh-100">
+                <div class="col-lg-6">
+                    <div class="hero-content">
+                        <h1 class="hero-title">
+                            Comunidad<br>
+                            <span class="gradient-text">Blockchain</span><br>
+                            Castilla-La Mancha
+                        </h1>
+                        <p class="hero-subtitle">
+                            El epicentro de innovación blockchain en CLM. 
+                            Donde desarrolladores, empresas y visionarios 
+                            construyen el futuro descentralizado.
+                        </p>
+                        <a href="#registro" class="cta-button">
+                            <i class="fas fa-arrow-right me-2"></i>
+                            Formar parte
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="position-relative">
+                        <!-- Elementos flotantes decorativos -->
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Elementos flotantes -->
+        <div class="floating-element floating-circle"></div>
+        <div class="floating-element floating-square"></div>
+        
+        <!-- Indicador de scroll -->
+        <div class="scroll-indicator">
+            <span style="font-size: 0.8rem;">Explorar</span>
+            <div class="scroll-arrow"></div>
+        </div>
+    </div>
+                     <script>
+                     // Animación contador interactivo
+                     function animateCounter(id, end, duration) {
+                         const el = document.getElementById(id);
+                         let start = 0;
+                         end = isNaN(end) || end < 0 ? 0 : end;
+                         const range = end - start;
+                         let current = start;
+                         const increment = end > start ? 1 : -1;
+                         const stepTime = range > 0 ? Math.abs(Math.floor(duration / range)) : duration;
+                         el.textContent = start;
+                         el.style.transition = 'color 0.3s, text-shadow 0.3s';
+                         if (range === 0) {
+                             el.textContent = end;
+                             el.style.color = '#00e676';
+                             el.style.textShadow = '0 0 18px #00e676, 1px 1px 8px #222';
+                             el.classList.add('bounce-anim');
+                             return;
+                         }
+                         function updateCounter() {
+                             current += increment;
+                             el.textContent = current;
+                             el.style.color = '#ffd700';
+                             el.style.textShadow = '0 0 12px #ffd700, 1px 1px 8px #222';
+                             if (current != end) {
+                                 setTimeout(updateCounter, stepTime);
+                             } else {
+                                 el.style.color = '#00e676';
+                                 el.style.textShadow = '0 0 18px #00e676, 1px 1px 8px #222';
+                                 el.classList.add('bounce-anim');
+                             }
+                         }
+                         updateCounter();
+                     }
+                     // Eliminada llamada a animateCounter en DOMContentLoaded
+                     </script>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Qué Hacemos -->
+    <section id="sobre-nosotros" class="modern-section">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Impulsamos la innovación blockchain</h2>
+                <p class="section-subtitle">
+                    Construimos puentes entre talento, tecnología y oportunidades 
+                    en el ecosistema descentralizado de Castilla-La Mancha
+                </p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <div class="modern-card">
+                        <div class="card-icon">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <h3 class="card-title">Desarrollo & Formación</h3>
+                        <p class="card-description">
+                            Workshops, bootcamps y mentoría en tecnologías blockchain. 
+                            Desde smart contracts hasta arquitecturas DeFi avanzadas.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="modern-card">
+                        <div class="card-icon">
+                            <i class="fas fa-handshake"></i>
+                        </div>
+                        <h3 class="card-title">Conexiones Estratégicas</h3>
+                        <p class="card-description">
+                            Facilitamos encuentros entre desarrolladores, empresas y proyectos. 
+                            Networking de calidad en el sector blockchain.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4">
+                    <div class="modern-card">
+                        <div class="card-icon">
+                            <i class="fas fa-rocket"></i>
+                        </div>
+                        <h3 class="card-title">Ecosistema de Crecimiento</h3>
+                        <p class="card-description">
+                            Apoyo a startups blockchain, incubación de proyectos 
+                            y acceso a financiación en el ecosistema Web3.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+                    <div class="card h-100 shadow-sm border-0 testimonial-card">
+                        <div class="card-body text-center p-4">
+                            <div class="testimonial-avatar mb-3">
+                                <i class="fas fa-user-circle fa-4x text-warning"></i>
+                            </div>
+                            <h5 class="card-title fw-bold">Miguel L.</h5>
+                            <p class="text-muted small mb-3">Blockchain Consultant | Ciudad Real</p>
+                            <blockquote class="blockquote">
+                                <p class="mb-3 fst-italic">"Desde CLM asesoro a empresas internacionales en blockchain. La red de DevPool ABCLM abrió puertas increíbles."</p>
+                            </blockquote>
+                            <div class="d-flex justify-content-center">
+                                <span class="badge bg-danger me-1">Consulting</span>
+                                <span class="badge bg-info me-1">Enterprise</span>
+                                <span class="badge bg-secondary">B2B</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats de Impacto -->
+            <div class="row mt-5 text-center">
+                <div class="col-lg-12">
+                    <div class="card border-0 bg-primary text-white">
+                        <div class="card-body py-4">
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <h3 class="display-6 fw-bold mb-0" id="jobsCreated">47</h3>
+                                    <p class="mb-0">Empleos Creados</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <h3 class="display-6 fw-bold mb-0" id="projectsLaunched">23</h3>
+                                    <p class="mb-0">Proyectos Lanzados</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <h3 class="display-6 fw-bold mb-0" id="totalVolume">2.3M</h3>
+                                    <p class="mb-0">€ Volumen Generado</p>
+                                </div>
+                                <div class="col-md-3">
+                                    <h3 class="display-6 fw-bold mb-0" id="githubStars">1.2K</h3>
+                                    <p class="mb-0">GitHub Stars</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Formulario de Registro Rediseñado -->
+    <section id="registro" class="glass-section">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="modern-card">
+                        <div class="card-header-modern">
+                            <h2 class="modern-title-sm">Únete a la élite Web3</h2>
+                            <p class="subtitle-light">Forma parte del futuro blockchain de Castilla-La Mancha</p>
+                        </div>
+                        
+                        <form id="registrationForm" method="POST" action="/submit" class="modern-form">
+                            <div class="form-grid">
+                                <div class="input-group-modern">
+                                    <input type="text" name="name" required class="modern-input">
+                                    <label class="modern-label">Nombre completo</label>
+                                    <div class="input-line"></div>
+                                </div>
+                                
+                                <div class="input-group-modern">
+                                    <input type="email" name="email" required class="modern-input">
+                                    <label class="modern-label">Email profesional</label>
+                                    <div class="input-line"></div>
+                                </div>
+                                
+                                <div class="input-group-modern full-width">
+                                    <input type="text" name="skills" required class="modern-input">
+                                    <label class="modern-label">Especialización técnica</label>
+                                    <div class="input-line"></div>
+                                    <small class="helper-text">ej: Solidity, DeFi, Smart Contracts, Web3 Development</small>
+                                </div>
+                                
+                                <div class="input-group-modern">
+                                    <select name="experience_years" required class="modern-select">
+                                        <option value="">Nivel de experiencia</option>
+                                        <option value="0">Junior (0-2 años)</option>
+                                        <option value="3">Mid-level (3-5 años)</option>
+                                        <option value="6">Senior (6+ años)</option>
+                                    </select>
+                                    <div class="input-line"></div>
+                                </div>
+                                
+                                <div class="input-group-modern">
+                                    <input type="url" name="portfolio_url" class="modern-input">
+                                    <label class="modern-label">Portfolio / LinkedIn</label>
+                                    <div class="input-line"></div>
+                                </div>
+                                
+                                <div class="input-group-modern full-width">
+                                    <input type="text" name="location" required class="modern-input">
+                                    <label class="modern-label">Ubicación</label>
+                                    <div class="input-line"></div>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="modern-btn">
+                                <span class="btn-text">Formar parte del futuro</span>
+                                <div class="btn-background"></div>
+                                <div class="btn-ripple"></div>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal de Disclaimer de Protección de Datos -->
+    <div class="modal fade" id="dataProtectionModal" tabindex="-1" aria-labelledby="dataProtectionModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="dataProtectionModalLabel">
+                        🔒 Protección de Datos Personales
+                    </h5>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Información sobre el tratamiento de sus datos personales</strong>
+                    </div>
+                    
+                    <p><strong>Responsable del tratamiento:</strong> Asociación Blockchain de Castilla-La Mancha (ABCLM)</p>
+                    
+                    <p><strong>Finalidad:</strong> Los datos proporcionados serán utilizados para:</p>
+                    <ul>
+                        <li>Gestionar su registro en el DevPool de desarrolladores</li>
+                        <li>Enviar comunicaciones relacionadas con la comunidad blockchain</li>
+                        <li>Facilitar networking y oportunidades profesionales</li>
+                    </ul>
+                    
+                    <p><strong>Legitimación:</strong> Consentimiento del interesado</p>
+                    
+                    <p><strong>Conservación:</strong> Los datos se conservarán mientras mantenga su participación en el DevPool</p>
+                    
+                    <p><strong>Derechos:</strong> Puede ejercer sus derechos de acceso, rectificación, supresión, portabilidad, limitación u oposición contactando a: <strong>contacto@clmblockchain.org</strong></p>
+                    
+                    <div class="alert alert-warning mt-3">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        Al hacer clic en "Acepto", consiente el tratamiento de sus datos personales conforme a lo establecido.
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary" id="acceptDataProtection">
+                        <i class="fas fa-check"></i> Acepto y continuar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Apartado de webs de referencia -->
+    <section class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <a href="https://www.clmblockchain.tech/" target="_blank" class="btn btn-outline-primary m-2">
+                    <i class="fas fa-globe"></i> clmblockchain.tech
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Minimalista -->
+    <footer class="modern-footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <h3 class="brand-name">DevPool ABCLM</h3>
+                    <p class="brand-desc">Blockchain • Web3 • Castilla-La Mancha</p>
+                </div>
+                
+                <div class="footer-nav">
+                    <a href="#inicio" class="footer-link">Inicio</a>
+                    <a href="#acerca" class="footer-link">Acerca</a>
+                    <a href="#registro" class="footer-link">Únete</a>
+                    <a href="/admin/login" class="footer-link">Admin</a>
+                </div>
+                
+                <div class="social-grid">
+                    <a href="https://www.linkedin.com/company/asociacion-blockchain-de-castilla-la-mancha/" target="_blank" class="social-icon">
+                        <i class="fab fa-linkedin-in"></i>
+                    </a>
+                    <a href="https://t.me/+4QeI7xwu-0Q0ZTg0" target="_blank" class="social-icon">
+                        <i class="fab fa-telegram-plane"></i>
+                    </a>
+                    <a href="https://discord.com/invite/WKjF88rDFN" target="_blank" class="social-icon">
+                        <i class="fab fa-discord"></i>
+                    </a>
+                    <a href="https://www.youtube.com/@AsociacionBlockchainCLM" target="_blank" class="social-icon">
+                        <i class="fab fa-youtube"></i>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="copyright">
+                    <span>© 2024 Asociación Blockchain CLM</span>
+                </div>
+                <div class="footer-contact">
+                    <a href="mailto:contacto@clmblockchain.org" class="contact-link">
+                        contacto@clmblockchain.org
+                    </a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Mensajes flotantes -->
+    <div class="message-container"></div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let pendingFormData = null;
+        let pendingFormElement = null;
+
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            // CAPTURAR DATOS ANTES DE LIMPIAR FORMULARIO
+            const formData = new FormData(e.target);
+            
+            // GUARDAR DATOS Y ELEMENTO PARA PROCESAR DESPUÉS DEL DISCLAIMER
+            pendingFormData = formData;
+            pendingFormElement = e.target;
+            
+            // MOSTRAR MODAL DE PROTECCIÓN DE DATOS
+            const modal = new bootstrap.Modal(document.getElementById('dataProtectionModal'));
+            modal.show();
+        });
+
+        // MANEJAR ACEPTACIÓN DEL DISCLAIMER
+        document.getElementById('acceptDataProtection').addEventListener('click', async () => {
+            // CERRAR MODAL
+            const modal = bootstrap.Modal.getInstance(document.getElementById('dataProtectionModal'));
+            modal.hide();
+            
+            // MOSTRAR MENSAJE INMEDIATO
+            showSuccessMessage();
+            
+            // LIMPIAR FORMULARIO DESPUÉS DE CAPTURAR DATOS
+            if (pendingFormElement) {
+                pendingFormElement.reset();
+            }
+            
+            // ENVIAR DATOS EN SEGUNDO PLANO
+            if (pendingFormData) {
+                try {
+                    const response = await fetch('/submit', {
+                        method: 'POST',
+                        body: pendingFormData
+                    });
+                    const result = await response.json();
+                    console.log('Registro procesado:', result);
+                } catch (error) {
+                    console.error('Error en segundo plano:', error);
+                }
+            }
+            
+            // LIMPIAR VARIABLES TEMPORALES
+            pendingFormData = null;
+            pendingFormElement = null;
+        });
+
+        function showSuccessMessage() {
+            const container = document.querySelector('.message-container');
+            const message = document.createElement('div');
+            
+            message.className = 'alert-message alert-success';
+            message.innerHTML = `
+                <h5 class="mb-2">🎉 ¡Registro exitoso!</h5>
+                <p class="small mb-0">
+                    ✅ Perfil registrado correctamente<br>
+                    📧 Te enviaremos un email de bienvenida<br>
+                    🚀 ¡Bienvenido al DevPool de la ABCLM!
+                </p>
+            `;
+            
+            container.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 6000);
+        }
+
+        function showMessage(data) {
+            const container = document.querySelector('.message-container');
+            const message = document.createElement('div');
+            
+            message.className = `alert-message ${data.status === 'success' ? 'alert-success' : 'alert-error'}`;
+            message.innerHTML = `
+                <h5 class="mb-2">${data.message}</h5>
+                ${data.details ? `<p class="small mb-0">${data.details}</p>` : ''}
+            `;
+            
+            container.appendChild(message);
+            
+            setTimeout(() => {
+                message.remove();
+            }, 5000);
+        }
+
+        // Script para animaciones de letras
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.brand-text .letter').forEach((letter, index) => {
+                letter.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+
+        // Formulario de registro moderno
+        document.getElementById('registrationForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            const originalText = submitBtn.innerHTML;
+            
+            // Animación del botón
+            submitBtn.innerHTML = '<span class="btn-text">Procesando...</span>';
+            submitBtn.style.pointerEvents = 'none';
+            
+            try {
+                const response = await fetch('/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    showMessage('✨ ¡Bienvenido a la élite blockchain de CLM!', 'success');
+                    e.target.reset();
+                } else {
+                    throw new Error('Error en el registro');
+                }
+            } catch (error) {
+                showMessage('❌ Error en el registro. Inténtalo de nuevo.', 'danger');
+            } finally {
+                submitBtn.innerHTML = originalText;
+                submitBtn.style.pointerEvents = 'auto';
+            }
+        });
+
+        // Animaciones de entrada
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.modern-card, .about-card').forEach(el => {
+            el.style.opacity = '0';
+            el.style.transform = 'translateY(30px)';
+            el.style.transition = 'all 0.8s ease';
+            observer.observe(el);
+        });
+
+        // Efectos parallax suaves
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const parallaxElements = document.querySelectorAll('.floating-element');
+            
+            parallaxElements.forEach((element, index) => {
+                const speed = 0.5 + (index * 0.2);
+                element.style.transform = `translateY(${scrolled * speed}px)`;
+            });
+        });
+    </script>
+</body>
+</html>

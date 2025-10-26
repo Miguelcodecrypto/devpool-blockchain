@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DevPool ABCLM - FUNCIONA</title>
+    <style>
+        body { background: #111; color: #00ff00; font-family: monospace; padding: 20px; }
+        h1 { color: #00ffff; font-size: 3em; text-align: center; }
+        .box { background: #222; padding: 20px; margin: 20px; border: 2px solid #00ff00; }
+        button { padding: 15px 30px; background: #00ff00; color: #000; border: none; font-size: 18px; cursor: pointer; }
+        input { padding: 10px; margin: 5px; width: 300px; }
+        a { color: #00ffff; text-decoration: none; font-size: 1.5em; }
+        a:hover { color: #ff00ff; }
+    </style>
+</head>
+<body>
+    <h1>🚀 DevPool ABCLM 🚀</h1>
+    
+    <div class="box">
+        <h2>✅ PÁGINA FUNCIONANDO CORRECTAMENTE</h2>
+        <p>Esta es una versión super simple que definitivamente funciona.</p>
+        <a href="#form">👇 IR AL FORMULARIO</a>
+    </div>
+
+    <div id="form" class="box">
+        <h2>📝 REGISTRO</h2>
+        <form action="/submit" method="POST">
+            <p><input type="text" name="name" placeholder="Tu nombre" required></p>
+            <p><input type="email" name="email" placeholder="Tu email" required></p>
+            <p><input type="text" name="skills" placeholder="Tus habilidades" required></p>
+            <p>
+                <select name="experience_years" required>
+                    <option value="">Experiencia</option>
+                    <option value="0">Junior</option>
+                    <option value="3">Mid</option>
+                    <option value="6">Senior</option>
+                </select>
+            </p>
+            <p><input type="text" name="location" placeholder="Ubicación" required></p>
+            <p><button type="submit">🎯 REGISTRARSE</button></p>
+        </form>
+    </div>
+
+    <script>
+        // Smooth scroll simple
+        document.querySelector('a[href="#form"]').onclick = function(e) {
+            e.preventDefault();
+            document.getElementById('form').scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Form handler
+        document.querySelector('form').onsubmit = async function(e) {
+            e.preventDefault();
+            alert('🎉 Formulario enviado correctamente!');
+            
+            try {
+                const response = await fetch('/submit', {
+                    method: 'POST',
+                    body: new FormData(this)
+                });
+                if (response.ok) {
+                    alert('✅ Registro exitoso!');
+                    this.reset();
+                } else {
+                    alert('❌ Error en servidor');
+                }
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
