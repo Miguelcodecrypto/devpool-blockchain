@@ -76,16 +76,16 @@ def log_security_event(event_type, details, ip=None):
     ip = ip or get_remote_address()
     print(f"🚨 [SECURITY] {timestamp} - {event_type} - IP: {ip} - {details}")
 
-# Configuración de correo - VERSIÓN MEJORADA CON MEJOR DEBUGGING
+# Configuración de correo - SMTP2GO (Render compatible)
 try:
-    # Configuración SMTP ROBUSTA
-    app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.panel247.com')
-    app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+    # Configuración SMTP ROBUSTA - SMTP2GO por defecto
+    app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'mail.smtp2go.com')
+    app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 2525))
     app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
     app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
     app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
-    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', app.config['MAIL_USERNAME'])
+    app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'contacto@clmblockchain.org')
     
     # Logging detallado de configuración
     print("📧 [EMAIL CONFIG] Configuración SMTP:")
@@ -194,7 +194,7 @@ def send_welcome_email(user_name: str, user_email: str, user_skills: str):
         # Crear mensaje
         message = MIMEMultipart("alternative")
         message["Subject"] = "Bienvenido al DevPool Blockchain CLM"
-        message["From"] = app.config['MAIL_USERNAME']
+        message["From"] = app.config['MAIL_DEFAULT_SENDER']
         message["To"] = user_email
         
         # Agregar contenido HTML con encoding UTF-8
@@ -272,7 +272,7 @@ def send_admin_notification(user_data: dict):
         # Crear mensaje
         message = MIMEMultipart("alternative")
         message["Subject"] = f"Nuevo registro DevPool: {user_data.get('name')}"
-        message["From"] = app.config['MAIL_USERNAME']
+        message["From"] = app.config['MAIL_DEFAULT_SENDER']
         message["To"] = admin_email
         
         # Agregar contenido HTML
