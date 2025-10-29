@@ -9,6 +9,9 @@ import time
 from collections import defaultdict
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
+# from flask_limiter import Limiter  # Se habilitará en producción
+# from flask_limiter.util import get_remote_address  # Se habilitará en producción  
+# from flask_wtf.csrf import CSRFProtect  # Se habilitará en producción
 from dotenv import load_dotenv
 from supabase import create_client, Client
 import smtplib
@@ -22,14 +25,26 @@ load_dotenv()
 app = Flask(__name__)
 
 # 🔐 CONFIGURACIÓN DE SEGURIDAD MEJORADA
+# Generar secret key robusta si no existe
 app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
 
 # Configuración de cookies seguras
 app.config.update(
-    SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE='Lax',
-    PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),
+    # SESSION_COOKIE_SECURE=True,  # Se habilitará en producción HTTPS
+    SESSION_COOKIE_HTTPONLY=True,  # No accesible via JavaScript
+    SESSION_COOKIE_SAMESITE='Lax',  # Protección CSRF
+    PERMANENT_SESSION_LIFETIME=timedelta(minutes=30),  # Auto-logout 30 min
+    # WTF_CSRF_TIME_LIMIT=None,  # Se habilitará en producción
 )
+
+# Inicializar protecciones de seguridad
+# csrf = CSRFProtect(app)  # Se habilitará en producción
+# limiter = Limiter(  # Se habilitará en producción
+#     app=app,
+#     key_func=get_remote_address,
+#     default_limits=["200 per day", "50 per hour"],
+#     storage_uri="memory://"
+# )
 
 def get_remote_address():
     """Obtener IP del cliente"""
@@ -54,10 +69,10 @@ def record_failed_attempt(ip):
     """Registrar intento fallido y bloquear si es necesario"""
     current_time = time.time()
     
-    # Limpiar intentos antiguos
+    # Limpiar intentos antiguos (más de 15 minutos)
     failed_attempts[ip] = [
         attempt_time for attempt_time in failed_attempts[ip]
-        if current_time - attempt_time < 900
+        if current_time - attempt_time < 900  # 15 minutos
     ]
     
     # Añadir nuevo intento
@@ -65,7 +80,7 @@ def record_failed_attempt(ip):
     
     # Bloquear si hay 5 o más intentos en 15 minutos
     if len(failed_attempts[ip]) >= 5:
-        blocked_ips[ip] = current_time + 900
+        blocked_ips[ip] = current_time + 900  # Bloquear por 15 minutos
         return True
     
     return False
@@ -76,35 +91,92 @@ def log_security_event(event_type, details, ip=None):
     ip = ip or get_remote_address()
     print(f"🚨 [SECURITY] {timestamp} - {event_type} - IP: {ip} - {details}")
 
-# Configuración de correo - VERSIÓN MEJORADA CON MEJOR DEBUGGING
+def send_security_alert(event_type, details, ip=None):
+    """Enviar alerta de seguridad por email"""
+    try:
+        admin_email = os.environ.get('ADMIN_EMAIL')
+        if not admin_email:
+            return
+            
+        alert_html = f'''
+        <div style="background: #fee; border: 1px solid #f66; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #d00;">🚨 Alerta de Seguridad - DevPool ABCLM</h2>
+            <p><strong>Evento:</strong> {event_type}</p>
+            <p><strong>IP:</strong> {ip or get_remote_address()}</p>
+            <p><strong>Timestamp:</strong> {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}</p>
+            <p><strong>Detalles:</strong> {details}</p>
+        </div>
+        '''
+        
+        # Usar la función existente de envío de email
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = f'🚨 Alerta de Seguridad - {event_type}'
+        msg['From'] = app.config['MAIL_USERNAME']
+        msg['To'] = admin_email
+        
+        html_part = MIMEText(alert_html, 'html', 'utf-8')
+        msg.attach(html_part)
+        
+        # Enviar usando configuración SMTP existente
+        context = ssl.create_default_context()
+        with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT']) as server:
+            if app.config.get('MAIL_USE_TLS'):
+                server.starttls(context=context)
+            server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+            server.send_message(msg)
+            
+    except Exception as e:
+        print(f"❌ Error enviando alerta de seguridad: {e}")
+
+# Configuración de correo DonDominio
 try:
-    # Configuración SMTP ROBUSTA
-    app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.panel247.com')
-    app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
-    app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
-    app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
+    # Configuración SMTP - SOPORTE MÚLTIPLES PROVEEDORES
+    app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'mail.smtp2go.com')
+    app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 2525))
+    
+    # Configuración específica por proveedor
+    if 'smtp2go.com' in app.config['MAIL_SERVER']:
+        # SMTP2GO - Puerto 2525 TLS (Render compatible)
+        app.config['MAIL_USE_TLS'] = True
+        app.config['MAIL_USE_SSL'] = False
+        print("🔧 Configuración SMTP2GO: TLS en puerto 2525 (Render compatible)")
+    elif 'smtp.panel247.com' in app.config['MAIL_SERVER']:
+        # DonDominio - Configuración por puerto
+        if app.config['MAIL_PORT'] == 587:
+            app.config['MAIL_USE_TLS'] = True
+            app.config['MAIL_USE_SSL'] = False
+            print("🔧 Configuración DonDominio: TLS en puerto 587")
+        elif app.config['MAIL_PORT'] == 2525:
+            app.config['MAIL_USE_TLS'] = True
+            app.config['MAIL_USE_SSL'] = False
+            print("🔧 Configuración DonDominio: TLS en puerto 2525 (Render compatible)")
+        elif app.config['MAIL_PORT'] == 465:
+            app.config['MAIL_USE_TLS'] = False
+            app.config['MAIL_USE_SSL'] = True
+            print("🔧 Configuración DonDominio: SSL en puerto 465")
+    else:
+        # Configuración genérica
+        app.config['MAIL_USE_TLS'] = os.environ.get('MAIL_USE_TLS', 'True').lower() == 'true'
+        app.config['MAIL_USE_SSL'] = os.environ.get('MAIL_USE_SSL', 'False').lower() == 'true'
+        print(f"🔧 Configuración genérica: Puerto {app.config['MAIL_PORT']}")
+    
     app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME')
     app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD')
     app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', app.config['MAIL_USERNAME'])
     
-    # Logging detallado de configuración
-    print("📧 [EMAIL CONFIG] Configuración SMTP:")
-    print(f"📧 [EMAIL CONFIG] Servidor: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
-    print(f"📧 [EMAIL CONFIG] Usuario: {app.config['MAIL_USERNAME']}")
-    print(f"📧 [EMAIL CONFIG] Password configurado: {'SÍ' if app.config['MAIL_PASSWORD'] else 'NO'}")
-    print(f"📧 [EMAIL CONFIG] TLS: {app.config['MAIL_USE_TLS']}, SSL: {app.config['MAIL_USE_SSL']}")
-    
     # Configurar email solo si tiene credenciales
     if app.config.get('MAIL_USERNAME') and app.config.get('MAIL_PASSWORD'):
-        mail = True
-        print("✅ Sistema de email configurado correctamente")
+        mail = True  # Marca que el email está configurado
+        print("✅ Sistema de email DonDominio configurado")
+        print(f"📧 Servidor: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
+        print(f"📧 Usuario: {app.config['MAIL_USERNAME']}")
+        print(f"🔒 TLS: {app.config['MAIL_USE_TLS']}, SSL: {app.config['MAIL_USE_SSL']}")
     else:
         mail = None
-        print("⚠️ Sistema de email NO configurado - faltan credenciales")
-        
+        print("⚠️ Sistema de email no configurado - funcionará sin emails")
 except Exception as e:
     mail = None
-    print(f"❌ Error inicializando sistema de email: {e}")
+    print(f"⚠️ Error inicializando sistema de email: {e}")
 
 # ────────────────────────────────────────────────
 # Configuración de Supabase
@@ -132,124 +204,87 @@ except Exception as e:
     admin_table = None
 
 # ────────────────────────────────────────────────
-# FUNCIONES DE EMAIL MEJORADAS CON DEBUGGING AVANZADO
-def test_smtp_connection():
-    """Prueba la conexión SMTP antes de enviar emails"""
-    try:
-        print("🧪 [SMTP TEST] Probando conexión SMTP...")
-        
-        if not app.config.get('MAIL_USERNAME') or not app.config.get('MAIL_PASSWORD'):
-            print("❌ [SMTP TEST] Credenciales no configuradas")
-            return False
-        
-        context = ssl.create_default_context()
-        
-        if app.config.get('MAIL_USE_SSL'):
-            # SSL
-            print(f"🔧 [SMTP TEST] Conectando con SSL al puerto {app.config['MAIL_PORT']}")
-            with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], 
-                                 context=context, timeout=30) as server:
-                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-        else:
-            # TLS
-            print(f"🔧 [SMTP TEST] Conectando con TLS al puerto {app.config['MAIL_PORT']}")
-            with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], timeout=30) as server:
-                if app.config.get('MAIL_USE_TLS'):
-                    server.starttls(context=context)
-                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-        
-        print("✅ [SMTP TEST] Conexión SMTP exitosa")
-        return True
-        
-    except Exception as e:
-        print(f"❌ [SMTP TEST] Error de conexión: {type(e).__name__}: {str(e)}")
-        return False
-
+# FUNCIONES DE EMAIL CON DONDOMINIO SMTP
 def send_welcome_email(user_name: str, user_email: str, user_skills: str):
-    """Envía email de bienvenida con debugging mejorado"""
+    """Envía email de bienvenida al usuario registrado usando DonDominio"""
     
     try:
-        print(f"📧 [WELCOME] Iniciando envío de email de bienvenida a: {user_email}")
-        
-        # Verificar configuración
+        # Verificar configuración de email antes de intentar enviar
         if not app.config.get('MAIL_USERNAME') or not app.config.get('MAIL_PASSWORD'):
-            print("❌ [WELCOME] Credenciales SMTP no configuradas")
+            print("⚠️ Configuración de email incompleta, saltando envío")
             return False
         
-        # Test de conexión primero
-        if not test_smtp_connection():
-            print("❌ [WELCOME] Test de conexión SMTP falló")
-            return False
+        # Renderizar template de email
+        email_html = render_template('emails/welcome_email.html', 
+                                    user_name=user_name, 
+                                    user_skills=user_skills)
         
-        # Renderizar template
-        try:
-            email_html = render_template('emails/welcome_email.html', 
-                                        user_name=user_name, 
-                                        user_skills=user_skills)
-            print("✅ [WELCOME] Template renderizado correctamente")
-        except Exception as template_error:
-            print(f"❌ [WELCOME] Error renderizando template: {template_error}")
-            return False
+        # SMTP directo con DonDominio
+        import smtplib
+        import ssl
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        
+        print(f"🔧 [WELCOME] Conectando a DonDominio SMTP...")
+        print(f"� [WELCOME] Servidor: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
         
         # Crear mensaje
         message = MIMEMultipart("alternative")
-        message["Subject"] = "Bienvenido al DevPool Blockchain CLM"
-        message["From"] = app.config['MAIL_USERNAME']
+        message["Subject"] = "🚀 ¡Bienvenido al DevPool Blockchain CLM!"
+        message["From"] = "contacto@clmblockchain.org"  # Dominio verificado en SMTP2GO
         message["To"] = user_email
         
-        # Agregar contenido HTML con encoding UTF-8
-        html_part = MIMEText(email_html, "html", "utf-8")
+        # Crear parte HTML
+        html_part = MIMEText(email_html, "html")
         message.attach(html_part)
         
-        print(f"📧 [WELCOME] Mensaje creado - Enviando desde {app.config['MAIL_USERNAME']} a {user_email}")
-        
-        # Enviar email
-        context = ssl.create_default_context()
-        
-        if app.config.get('MAIL_USE_SSL'):
-            # SSL (puerto 465)
-            print(f"🔧 [WELCOME] Enviando con SSL en puerto {app.config['MAIL_PORT']}")
-            with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], 
-                                 context=context, timeout=60) as server:
-                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                server.send_message(message)
-        else:
-            # TLS (puerto 587)
-            print(f"🔧 [WELCOME] Enviando con TLS en puerto {app.config['MAIL_PORT']}")
-            with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], timeout=60) as server:
-                if app.config.get('MAIL_USE_TLS'):
-                    server.starttls(context=context)
-                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                server.send_message(message)
+        # Conectar según configuración TLS/SSL con timeout
+        try:
+            if app.config.get('MAIL_USE_SSL'):
+                # SSL (puerto 465)
+                print(f"🔧 [WELCOME] Usando SSL en puerto {app.config['MAIL_PORT']}")
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], 
+                                     context=context, timeout=30) as server:
+                    server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                    print("🔧 [WELCOME] Enviando mensaje...")
+                    server.send_message(message)
+            else:
+                # TLS (puerto 587)
+                print(f"🔧 [WELCOME] Usando TLS en puerto {app.config['MAIL_PORT']}")
+                with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], timeout=30) as server:
+                    if app.config.get('MAIL_USE_TLS'):
+                        print("🔧 [WELCOME] Iniciando STARTTLS...")
+                        server.starttls()
+                    print("🔧 [WELCOME] Autenticando...")
+                    server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                    print("🔧 [WELCOME] Enviando mensaje...")
+                    server.send_message(message)
+        except Exception as smtp_error:
+            print(f"🔧 [WELCOME] Error SMTP específico: {type(smtp_error).__name__}: {str(smtp_error)}")
+            raise smtp_error
             
-        print(f"✅ [WELCOME] Email de bienvenida enviado exitosamente a {user_email}")
+        print(f"✅ Email de bienvenida enviado a {user_email}")
         return True
         
     except Exception as e:
-        print(f"❌ [WELCOME] Error enviando email: {type(e).__name__}: {str(e)}")
-        print(f"❌ [WELCOME] Detalles del error: {e}")
+        print(f"❌ Error enviando email a {user_email}: {type(e).__name__}: {str(e)}")
         return False
 
 def send_admin_notification(user_data: dict):
-    """Envía notificación al admin con debugging mejorado"""
+    """Envía notificación al admin sobre nuevo registro usando DonDominio"""
     
     try:
         admin_email = os.environ.get('ADMIN_EMAIL')
-        print(f"📧 [ADMIN] Iniciando notificación admin para: {user_data.get('name')}")
-        
-        # Verificar configuración
-        if not admin_email:
-            print("❌ [ADMIN] ADMIN_EMAIL no configurado")
+        # Verificar configuración de email
+        if not admin_email or not app.config.get('MAIL_USERNAME'):
+            print("⚠️ Email no configurado, saltando notificación admin")
             return False
             
-        if not app.config.get('MAIL_USERNAME') or not app.config.get('MAIL_PASSWORD'):
-            print("❌ [ADMIN] Credenciales SMTP no configuradas")
-            return False
-        
         # Preparar HTML del email admin
         admin_html = f'''
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #6366f1;">Nuevo Desarrollador Registrado</h2>
+            <h2 style="color: #6366f1;">🎉 Nuevo Desarrollador Registrado</h2>
             
             <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin: 20px 0;">
                 <h3>Información del registro:</h3>
@@ -269,38 +304,54 @@ def send_admin_notification(user_data: dict):
         </div>
         '''
             
+        # SMTP directo con DonDominio
+        import smtplib
+        import ssl
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        
+        print(f"🔧 [ADMIN] Conectando a DonDominio SMTP...")
+        
         # Crear mensaje
         message = MIMEMultipart("alternative")
-        message["Subject"] = f"Nuevo registro DevPool: {user_data.get('name')}"
-        message["From"] = app.config['MAIL_USERNAME']
+        message["Subject"] = f"📧 Nuevo registro en DevPool: {user_data.get('name')}"
+        message["From"] = "contacto@clmblockchain.org"  # Dominio verificado en SMTP2GO
         message["To"] = admin_email
         
-        # Agregar contenido HTML
-        html_part = MIMEText(admin_html, "html", "utf-8")
+        # Crear parte HTML
+        html_part = MIMEText(admin_html, "html")
         message.attach(html_part)
         
-        print(f"📧 [ADMIN] Enviando notificación desde {app.config['MAIL_USERNAME']} a {admin_email}")
-        
-        # Enviar email
-        context = ssl.create_default_context()
-        
-        if app.config.get('MAIL_USE_SSL'):
-            with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], 
-                                 context=context, timeout=60) as server:
-                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                server.send_message(message)
-        else:
-            with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], timeout=60) as server:
-                if app.config.get('MAIL_USE_TLS'):
-                    server.starttls(context=context)
-                server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
-                server.send_message(message)
+        # Conectar según configuración TLS/SSL con timeout
+        try:
+            if app.config.get('MAIL_USE_SSL'):
+                # SSL (puerto 465)
+                print(f"🔧 [ADMIN] Usando SSL en puerto {app.config['MAIL_PORT']}")
+                context = ssl.create_default_context()
+                with smtplib.SMTP_SSL(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], 
+                                     context=context, timeout=30) as server:
+                    server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                    server.send_message(message)
+            else:
+                # TLS (puerto 587)
+                print(f"🔧 [ADMIN] Usando TLS en puerto {app.config['MAIL_PORT']}")
+                with smtplib.SMTP(app.config['MAIL_SERVER'], app.config['MAIL_PORT'], timeout=30) as server:
+                    if app.config.get('MAIL_USE_TLS'):
+                        print("🔧 [ADMIN] Iniciando STARTTLS...")
+                        server.starttls()
+                    print("🔧 [ADMIN] Autenticando...")
+                    server.login(app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+                    print("🔧 [ADMIN] Enviando mensaje...")
+                    server.send_message(message)
+        except Exception as smtp_error:
+            print(f"🔧 [ADMIN] Error SMTP específico: {type(smtp_error).__name__}: {str(smtp_error)}")
+            raise smtp_error
             
-        print(f"✅ [ADMIN] Notificación admin enviada exitosamente")
+        print(f"✅ Notificación de admin enviada para {user_data.get('name')}")
         return True
         
     except Exception as e:
-        print(f"❌ [ADMIN] Error enviando notificación: {type(e).__name__}: {str(e)}")
+        print(f"❌ Error enviando notificación admin: {str(e)}")
         return False
 
 # ────────────────────────────────────────────────
@@ -308,11 +359,22 @@ def send_admin_notification(user_data: dict):
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        # Verificar si la sesión existe y es válida
         if not session.get('admin_logged'):
             log_security_event("UNAUTHORIZED_ACCESS_ATTEMPT", f"Acceso no autorizado a {request.endpoint}")
             session.clear()
             return redirect(url_for('admin_login'))
         
+        # Verificar expiración de sesión (opcional en desarrollo)
+        # login_time = session.get('admin_login_time')
+        # if login_time:
+        #     login_datetime = datetime.fromisoformat(login_time)
+        #     if datetime.now() - login_datetime > timedelta(minutes=30):
+        #         log_security_event("SESSION_EXPIRED", f"Sesión expirada para admin")
+        #         session.clear()
+        #         return redirect(url_for('admin_login'))
+        
+        # Renovar timestamp de actividad
         session['admin_last_activity'] = datetime.now().isoformat()
         session.permanent = True
         
@@ -322,6 +384,7 @@ def admin_required(f):
 # ────────────────────────────────────────────────
 @app.route('/')
 def index():
+    # Obtener número de usuarios registrados
     try:
         response = developers_table.select('id').execute()
         num_usuarios = len(response.data) if response and hasattr(response, 'data') else 0
@@ -332,22 +395,27 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     try:
-        print("🔍 [SUBMIT] === NUEVO REGISTRO INICIADO ===")
+        print("🔍 [SUBMIT] Recibiendo datos del formulario...")
         
         data = request.form
         print(f"🔍 [SUBMIT] Datos recibidos: {dict(data)}")
+        print(f"🔍 [SUBMIT] Content-Type: {request.content_type}")
         
         required_fields = ['name', 'email', 'skills', 'experience_years']
         
+        # Validar campos requeridos con logging detallado
         missing_fields = []
         for field in required_fields:
             value = data.get(field)
+            print(f"🔍 [SUBMIT] Campo '{field}': '{value}'")
             if not value or not value.strip():
                 missing_fields.append(field)
         
         if missing_fields:
             print(f"❌ [SUBMIT] Campos faltantes: {missing_fields}")
             return jsonify({'error': f'Campos requeridos faltantes: {", ".join(missing_fields)}'}), 400
+        
+        print(f"✅ [SUBMIT] Validación inicial completada para: {data.get('name')}")
         
         # Validar email
         email_pattern = r'^[^\s@]+@[^\s@]+\.[^\s@]+$'
@@ -364,8 +432,8 @@ def submit():
             return jsonify({'error': 'Años de experiencia debe ser un número'}), 400
         
         # Obtener IP del usuario
-        user_ip = get_remote_address()
-        print(f"🔍 [SUBMIT] IP registrada: {user_ip}")
+        user_ip = request.environ.get('HTTP_X_FORWARDED_FOR', request.environ.get('REMOTE_ADDR', 'Unknown'))
+        print(f"IP registrada: {user_ip}")
         
         # Preparar datos para insertar
         developer_data = {
@@ -380,91 +448,77 @@ def submit():
             'created_at': datetime.now().isoformat()
         }
         
-        print(f"🔍 [SUBMIT] Insertando en Supabase: {developer_data['name']} ({developer_data['email']})")
-        
         # Insertar en Supabase
         response = developers_table.insert(developer_data).execute()
         
         if response.data:
-            print(f"✅ [SUBMIT] Usuario {data['name']} registrado exitosamente en BD")
+            print(f"✅ Usuario {data['name']} registrado exitosamente")
             
-            # INTENTAR ENVÍO DE EMAILS CON DEBUGGING DETALLADO
-            print("📧 [SUBMIT] === INICIANDO ENVÍO DE EMAILS ===")
+            # ENVÍO DIRECTO DE EMAILS - VERSIÓN CORREGIDA
+            print("📧 Enviando emails directamente...")
             
             # Email de bienvenida
-            email_sent = False
-            admin_notified = False
-            
-            try:
-                print(f"📧 [SUBMIT] Enviando email de bienvenida...")
-                email_sent = send_welcome_email(
-                    user_name=data['name'],
-                    user_email=data['email'], 
-                    user_skills=data['skills']
-                )
-                print(f"📧 [SUBMIT] Resultado email bienvenida: {email_sent}")
-            except Exception as email_error:
-                print(f"❌ [SUBMIT] Error crítico en email bienvenida: {email_error}")
+            print(f"📤 Enviando email de bienvenida a: {data['email']}")
+            email_sent = send_welcome_email(
+                user_name=data['name'],
+                user_email=data['email'], 
+                user_skills=data['skills']
+            )
+            print(f"📤 Resultado email bienvenida: {email_sent}")
             
             # Notificación admin
-            try:
-                print(f"📧 [SUBMIT] Enviando notificación admin...")
-                admin_notified = send_admin_notification(developer_data)
-                print(f"📧 [SUBMIT] Resultado notificación admin: {admin_notified}")
-            except Exception as admin_error:
-                print(f"❌ [SUBMIT] Error crítico en notificación admin: {admin_error}")
+            print(f"📤 Enviando notificación admin para: {data['name']}")
+            admin_notified = send_admin_notification(developer_data)
+            print(f"📤 Resultado notificación admin: {admin_notified}")
             
-            print("📧 [SUBMIT] === ENVÍO DE EMAILS COMPLETADO ===")
-            
-            # RESPUESTA AL USUARIO SIEMPRE EXITOSA
-            response_message = '🎉 ¡Registro exitoso! Bienvenido al DevPool Blockchain CLM'
-            if not email_sent:
-                response_message += ' (Email de confirmación en proceso)'
-            
+            # RESPUESTA AL USUARIO
             return jsonify({
                 'success': True, 
-                'message': response_message,
+                'message': '🎉 ¡Registro exitoso! Bienvenido al DevPool Blockchain CLM',
                 'email_status': {
                     'welcome_sent': email_sent,
-                    'admin_notified': admin_notified,
-                    'mode': 'production'
+                    'admin_notified': admin_notified
                 }
             }), 200
         else:
-            print("❌ [SUBMIT] Error insertando en Supabase")
             return jsonify({'error': 'Error al registrar el usuario'}), 500
             
     except Exception as e:
-        print(f"❌ [SUBMIT] Error crítico en submit: {str(e)}")
+        print(f"❌ Error en submit: {str(e)}")
         return jsonify({'error': 'Error interno del servidor'}), 500
 
 @app.route('/admin/login', methods=['GET', 'POST'])
+# @limiter.limit("5 per 15 minutes")  # Se habilitará en producción
 def admin_login():
     client_ip = get_remote_address()
     
+    # Verificar si la IP está bloqueada
     if is_ip_blocked(client_ip):
-        log_security_event("BLOCKED_IP_ACCESS", f"Acceso bloqueado", client_ip)
+        log_security_event("BLOCKED_IP_ACCESS", f"Acceso bloqueado por múltiples intentos fallidos", client_ip)
         return render_template('admin_login.html', 
-                             error='IP bloqueada temporalmente'), 429
+                             error='IP bloqueada temporalmente por múltiples intentos fallidos. Intente en 15 minutos.'), 429
     
     if request.method == 'POST':
         username = request.form.get('username', '').strip()
         password = request.form.get('password', '')
         
         if not username or not password:
-            log_security_event("LOGIN_MISSING_CREDENTIALS", f"Sin credenciales", client_ip)
+            log_security_event("LOGIN_MISSING_CREDENTIALS", f"Intento de login sin credenciales", client_ip)
             return render_template('admin_login.html', error='Usuario y contraseña requeridos')
         
         try:
+            # Buscar admin en Supabase
             response = admin_table.select('hashed_password').eq('username', username).execute()
             
             if response.data:
                 stored_hash = response.data[0]['hashed_password']
                 
                 if check_password_hash(stored_hash, password):
+                    # Login exitoso - limpiar intentos fallidos
                     if client_ip in failed_attempts:
                         del failed_attempts[client_ip]
                     
+                    # Crear sesión segura
                     session.permanent = True
                     session['admin_logged'] = True
                     session['admin_token'] = secrets.token_hex(32)
@@ -472,30 +526,37 @@ def admin_login():
                     session['admin_last_activity'] = datetime.now().isoformat()
                     session['admin_username'] = username
                     
-                    log_security_event("SUCCESSFUL_LOGIN", f"Login exitoso: {username}", client_ip)
+                    log_security_event("SUCCESSFUL_LOGIN", f"Login exitoso para usuario: {username}", client_ip)
+                    
+                    # Enviar alerta de login admin
+                    send_security_alert("Login Admin", f"Usuario {username} ha iniciado sesión", client_ip)
                     
                     return redirect(url_for('admin_dashboard'))
                 else:
+                    # Contraseña incorrecta
                     blocked = record_failed_attempt(client_ip)
-                    log_security_event("FAILED_LOGIN", f"Contraseña incorrecta: {username}", client_ip)
+                    log_security_event("FAILED_LOGIN", f"Contraseña incorrecta para usuario: {username}", client_ip)
                     
                     if blocked:
+                        send_security_alert("IP Bloqueada", f"IP bloqueada por múltiples intentos fallidos", client_ip)
                         return render_template('admin_login.html', 
-                                             error='Demasiados intentos fallidos'), 429
+                                             error='Demasiados intentos fallidos. IP bloqueada por 15 minutos.'), 429
                     
                     return render_template('admin_login.html', error='Credenciales inválidas')
             else:
+                # Usuario no encontrado
                 blocked = record_failed_attempt(client_ip)
                 log_security_event("FAILED_LOGIN", f"Usuario no encontrado: {username}", client_ip)
                 
                 if blocked:
+                    send_security_alert("IP Bloqueada", f"IP bloqueada por múltiples intentos fallidos", client_ip)
                     return render_template('admin_login.html', 
-                                         error='Demasiados intentos fallidos'), 429
+                                         error='Demasiados intentos fallidos. IP bloqueada por 15 minutos.'), 429
                 
                 return render_template('admin_login.html', error='Credenciales inválidas')
                 
         except Exception as e:
-            log_security_event("LOGIN_ERROR", f"Error: {str(e)}", client_ip)
+            log_security_event("LOGIN_ERROR", f"Error del servidor en login: {str(e)}", client_ip)
             print(f"Error en login: {e}")
             return render_template('admin_login.html', error='Error del servidor')
     
@@ -505,6 +566,7 @@ def admin_login():
 @admin_required
 def admin_dashboard():
     try:
+        # Obtener todos los desarrolladores
         response = developers_table.select('*').order('created_at', desc=True).execute()
         developers = response.data if response.data else []
         
@@ -522,21 +584,25 @@ def admin_logout():
 
 @app.route('/admin/delete/<string:dev_id>', methods=['POST'])
 @admin_required
+# @limiter.limit("10 per minute")  # Se habilitará en producción
 def delete_developer(dev_id):
+    """Eliminar desarrollador por ID"""
     try:
         print(f"🗑️ Intentando eliminar desarrollador con ID: {dev_id}")
         
+        # Obtener información del desarrollador antes de eliminar
         info_response = developers_table.select('name, email').eq('id', dev_id).execute()
         
         if info_response.data:
             dev_info = info_response.data[0]
             
+            # Eliminar por ID en Supabase
             response = developers_table.delete().eq('id', dev_id).execute()
             
             if response.data:
                 print(f"✅ Desarrollador {dev_id} eliminado exitosamente")
                 log_security_event("DEVELOPER_DELETED", 
-                                 f"Admin eliminó: {dev_info['name']} ({dev_info['email']})")
+                                 f"Admin {session.get('admin_username')} eliminó desarrollador: {dev_info['name']} ({dev_info['email']})")
                 return redirect(url_for('admin_dashboard'))
             else:
                 print(f"❌ Error en eliminación de ID: {dev_id}")
@@ -552,11 +618,13 @@ def delete_developer(dev_id):
 
 @app.route('/admin/export')
 @admin_required
+# @limiter.limit("5 per hour")  # Se habilitará en producción
 def export_developers():
     try:
         response = developers_table.select('*').order('created_at', desc=True).execute()
         developers = response.data if response.data else []
         
+        # Crear archivo JSON
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         filename = f"developers_export_{timestamp}.json"
         
@@ -564,7 +632,7 @@ def export_developers():
             json.dump(developers, f, ensure_ascii=False, indent=2, default=str)
         
         log_security_event("DATA_EXPORT", 
-                         f"Admin exportó {len(developers)} registros")
+                         f"Admin {session.get('admin_username')} exportó {len(developers)} registros")
         
         return send_file(filename, as_attachment=True, download_name=filename)
         
@@ -573,23 +641,28 @@ def export_developers():
         log_security_event("EXPORT_ERROR", f"Error en exportación: {str(e)}")
         return "Error en exportación", 500
 
-# RUTAS DE DEBUGGING PARA EMAILS
 @app.route('/test-email-config')
 def test_email_config():
-    """Endpoint para verificar configuración de email"""
+    """Endpoint temporal para probar configuración de email"""
     try:
+        # Verificar configuración
+        server = app.config.get('MAIL_SERVER')
+        port = app.config.get('MAIL_PORT')
+        username = app.config.get('MAIL_USERNAME')
+        password = app.config.get('MAIL_PASSWORD')
+        
         return jsonify({
             'status': 'success',
             'config': {
-                'server': app.config.get('MAIL_SERVER'),
-                'port': app.config.get('MAIL_PORT'),
-                'username': app.config.get('MAIL_USERNAME'),
-                'password_configured': bool(app.config.get('MAIL_PASSWORD')),
+                'server': server,
+                'port': port,
+                'username': username,
+                'password_configured': bool(password),
                 'use_tls': app.config.get('MAIL_USE_TLS'),
-                'use_ssl': app.config.get('MAIL_USE_SSL'),
-                'admin_email': os.environ.get('ADMIN_EMAIL')
+                'use_ssl': app.config.get('MAIL_USE_SSL')
             }
         })
+        
     except Exception as e:
         return jsonify({
             'status': 'error',
@@ -597,15 +670,33 @@ def test_email_config():
         })
 
 @app.route('/test-smtp-connection')
-def test_smtp_connection_endpoint():
-    """Endpoint para probar conexión SMTP"""
+def test_smtp_connection():
+    """Endpoint temporal para probar conexión SMTP"""
     try:
-        result = test_smtp_connection()
+        server = app.config.get('MAIL_SERVER')
+        port = app.config.get('MAIL_PORT')
+        username = app.config.get('MAIL_USERNAME')
+        password = app.config.get('MAIL_PASSWORD')
+        
+        if not username or not password:
+            return jsonify({
+                'status': 'error',
+                'message': 'Credenciales no configuradas'
+            })
+        
+        # Test de conexión
+        context = ssl.create_default_context()
+        server_smtp = smtplib.SMTP(server, port, timeout=30)
+        server_smtp.starttls(context=context)
+        server_smtp.login(username, password)
+        server_smtp.quit()
+        
         return jsonify({
-            'status': 'success' if result else 'error',
-            'message': 'Conexión SMTP exitosa' if result else 'Error de conexión SMTP',
-            'server': f"{app.config.get('MAIL_SERVER')}:{app.config.get('MAIL_PORT')}"
+            'status': 'success',
+            'message': 'Conexión SMTP exitosa',
+            'server': f"{server}:{port}"
         })
+        
     except Exception as e:
         return jsonify({
             'status': 'error',
@@ -619,12 +710,10 @@ def test_send_email():
     try:
         # Datos de prueba
         test_data = {
-            'name': 'Test Usuario DevPool',
-            'email': os.environ.get('ADMIN_EMAIL', 'test@example.com'),
-            'skills': 'Testing, Debugging, DevOps'
+            'name': 'Test Usuario',
+            'email': 'olaya.soriano@gmail.com',
+            'skills': 'Testing, Debugging'
         }
-        
-        print(f"🧪 [TEST EMAIL] Enviando email de prueba a: {test_data['email']}")
         
         # Intentar envío
         result = send_welcome_email(
@@ -638,7 +727,7 @@ def test_send_email():
             'message': f'Envío de email: {"exitoso" if result else "fallido"}',
             'details': {
                 'to': test_data['email'],
-                'from': app.config.get('MAIL_USERNAME'),
+                'from': 'contacto@clmblockchain.org',
                 'result': result
             }
         })
@@ -652,12 +741,4 @@ def test_send_email():
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
-    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
-    
-    print("🚀 === INICIANDO DEVPOOL BLOCKCHAIN CLM ===")
-    print(f"🌍 Puerto: {port}")
-    print(f"🔧 Debug: {debug_mode}")
-    print(f"📧 Email configurado: {'SÍ' if mail else 'NO'}")
-    print("🚀 ==========================================")
-    
-    app.run(host='0.0.0.0', port=port, debug=debug_mode)
+    app.run(host='0.0.0.0', port=port, debug=True)
